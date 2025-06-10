@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import type {IObserver} from '~/types';
+import type { IObserver } from '~/types'
 
 /* MAIN */
 
@@ -11,7 +11,7 @@ class Scheduler {
 
   /* VARIABLES */
 
-  waiting: IObserver[] = [];
+  waiting: [IObserver, Error?][] = [];
 
   counter: number = 0;
   locked: boolean = false;
@@ -20,27 +20,27 @@ class Scheduler {
 
   flush = (): void => {
 
-    if ( this.locked ) return;
+    if (this.locked) return
 
-    if ( this.counter ) return;
+    if (this.counter) return
 
-    if ( !this.waiting.length ) return;
+    if (!this.waiting.length) return
 
     try {
 
-      this.locked = true;
+      this.locked = true
 
-      while ( true ) {
+      while (true) {
 
-        const queue = this.waiting;
+        const queue = this.waiting
 
-        if ( !queue.length ) break;
+        if (!queue.length) break
 
-        this.waiting = [];
+        this.waiting = []
 
-        for ( let i = 0, l = queue.length; i < l; i++ ) {
+        for (let i = 0, l = queue.length; i < l; i++) {
 
-          queue[i].update ();
+          queue[i][0].update(queue[i][1])
 
         }
 
@@ -48,29 +48,29 @@ class Scheduler {
 
     } finally {
 
-      this.locked = false;
+      this.locked = false
 
     }
 
   }
 
-  wrap = ( fn: () => void ): void => {
+  wrap = (fn: () => void): void => {
 
-    this.counter += 1;
+    this.counter += 1
 
-    fn ();
+    fn()
 
-    this.counter -= 1;
+    this.counter -= 1
 
-    this.flush ();
+    this.flush()
 
   }
 
   /* SCHEDULING API */
 
-  schedule = ( observer: IObserver ): void => {
+  schedule = (observer: IObserver, stack?: Error): void => {
 
-    this.waiting.push ( observer );
+    this.waiting.push([observer, stack])
 
   }
 
@@ -78,4 +78,4 @@ class Scheduler {
 
 /* EXPORT */
 
-export default new Scheduler ();
+export default new Scheduler()

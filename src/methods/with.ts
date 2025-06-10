@@ -1,24 +1,25 @@
 
 /* IMPORT */
 
-import {OBSERVER, OWNER} from '~/context';
-import type {WithFunction} from '~/types';
+import { OBSERVER, OWNER } from '~/context'
+import type { WithFunction } from '~/types'
 
 /* MAIN */
 
-const _with = (): (<T> ( fn: WithFunction<T> ) => T) => {
+const _with = (): (<T> (fn: WithFunction<T>, stack?: Error) => T) => {
 
-  const owner = OWNER;
-  const observer = OBSERVER;
+  const owner = OWNER
+  const observer = OBSERVER
 
-  return <T> ( fn: WithFunction<T> ): T => {
+  return <T>(fn: WithFunction<T>, stack?: Error): T => {
 
-    return owner.wrap ( () => fn (), owner, observer );
+    return owner.wrap(() => fn(stack), owner, observer as any, stack)
 
-  };
+  }
 
-};
+
+}
 
 /* EXPORT */
 
-export default _with;
+export default _with

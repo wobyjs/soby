@@ -1,16 +1,16 @@
 
 /* IMPORT */
 
-import Scheduler from '~/objects/scheduler.async';
+import Scheduler from '~/objects/scheduler.async'
 
 /* MAIN */
 
-const tick = (): void => {
+const tick = (stack?: Error): void => {
 
-  Scheduler.flush ();
+  Scheduler.flush(stack)
 
-};
+}
 
 /* EXPORT */
 
-export default tick;
+export default tick

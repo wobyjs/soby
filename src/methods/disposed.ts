@@ -1,24 +1,24 @@
 
 /* IMPORT */
 
-import cleanup from '~/methods/cleanup';
-import {readable} from '~/objects/callable';
-import Observable from '~/objects/observable';
-import type {ObservableReadonly} from '~/types';
+import cleanup from '~/methods/cleanup'
+import { readable } from '~/objects/callable'
+import Observable from '~/objects/observable'
+import type { ObservableReadonly } from '~/types'
 
 /* MAIN */
 
-const disposed = (): ObservableReadonly<boolean> => {
+const disposed = (stack?: Error): ObservableReadonly<boolean> => {
 
-  const observable = new Observable ( false );
-  const toggle = () => observable.set ( true );
+  const observable = new Observable(false)
+  const toggle = () => observable.set(true, stack)
 
-  cleanup ( toggle );
+  cleanup(toggle)
 
-  return readable ( observable );
+  return readable(observable)
 
-};
+}
 
 /* EXPORT */
 
-export default disposed;
+export default disposed

@@ -1,11 +1,12 @@
 
 /* IMPORT */
 
-import {DIRTY_MAYBE_NO, DIRTY_YES, UNINITIALIZED} from '~/constants';
-import {OBSERVER} from '~/context';
-import Scheduler from '~/objects/scheduler.sync';
-import {is, nope} from '~/utils';
-import type {IObserver, EqualsFunction, UpdateFunction, ObservableOptions} from '~/types';
+import { DIRTY_MAYBE_NO, DIRTY_YES, UNINITIALIZED } from '~/constants'
+import { OBSERVER } from '~/context'
+import Scheduler from '~/objects/scheduler.sync'
+import { is, nope } from '~/utils'
+import type { IObserver, EqualsFunction, UpdateFunction, ObservableOptions } from '~/types'
+import { callStack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -13,26 +14,28 @@ class Observable<T = unknown> {
 
   /* VARIABLES */
 
-  parent?: IObserver;
-  value: T;
-  equals?: EqualsFunction<T>;
-  observers: Set<IObserver> = new Set ();
+  parent?: IObserver
+  value: T
+  equals?: EqualsFunction<T>
+  observers: Set<IObserver> = new Set();
+  //@ts-ignore
+  stack?: Error
 
   /* CONSTRUCTOR */
 
-  constructor ( value: T, options?: ObservableOptions<T>, parent?: IObserver ) {
+  constructor(value: T, options?: ObservableOptions<T>, parent?: IObserver) {
 
-    this.value = value;
+    this.value = value
 
-    if ( parent ) {
+    if (parent) {
 
-      this.parent = parent;
+      this.parent = parent
 
     }
 
-    if ( options?.equals !== undefined ) {
+    if (options?.equals !== undefined) {
 
-      this.equals = options.equals || nope;
+      this.equals = options.equals || nope
 
     }
 
@@ -40,56 +43,58 @@ class Observable<T = unknown> {
 
   /* API */
 
-  get (): T {
+  get(stack?: Error): T {
 
-    if ( !this.parent?.disposed ) {
+    if (!this.parent?.disposed) {
 
-      this.parent?.update ();
+      this.parent?.update(stack)
 
-      OBSERVER?.observables.link ( this );
+      OBSERVER?.observables.link(this)
 
     }
 
-    return this.value;
+    return this.value
 
   }
 
-  set ( value: T ): T {
+  set(value: T, stack?: Error): T {
 
-    const equals = this.equals || is;
-    const fresh = ( this.value === UNINITIALIZED ) || !equals ( value, this.value );
+    const equals = this.equals || is
+    const fresh = (this.value === UNINITIALIZED) || !equals(value, this.value)
 
-    if ( !fresh ) return value;
+    if (!fresh) return value
 
-    this.value = value;
+    this.value = value
 
-    Scheduler.counter += 1;
+    this.stack = callStack()
 
-    this.stale ( DIRTY_YES );
+    Scheduler.counter += 1
 
-    Scheduler.counter -= 1;
+    this.stale(DIRTY_YES, this.stack)
 
-    Scheduler.flush ();
+    Scheduler.counter -= 1
 
-    return value;
+    Scheduler.flush()
+
+    return value
 
   }
 
-  stale ( status: number ): void {
+  stale(status: number, stack?: Error): void {
 
-    for ( const observer of this.observers ) {
+    for (const observer of this.observers) {
 
-      if ( observer.status !== DIRTY_MAYBE_NO || observer.observables.has ( this ) ) { // Maybe this is a potential future dependency we haven't re-read yet
+      if (observer.status !== DIRTY_MAYBE_NO || observer.observables.has(this)) { // Maybe this is a potential future dependency we haven't re-read yet
 
-        if ( observer.sync ) {
+        if (observer.sync) {
 
-          observer.status = Math.max ( observer.status, status );
+          observer.status = Math.max(observer.status, status)
 
-          Scheduler.schedule ( observer );
+          Scheduler.schedule(observer, stack)
 
         } else {
 
-          observer.stale ( status );
+          observer.stale(status, stack)
 
         }
 
@@ -99,11 +104,11 @@ class Observable<T = unknown> {
 
   }
 
-  update ( fn: UpdateFunction<T> ): T {
+  update(fn: UpdateFunction<T>, stack?: Error): T {
 
-    const value = fn ( this.value );
+    const value = fn(this.value)
 
-    return this.set ( value );
+    return this.set(value, stack)
 
   }
 
@@ -111,4 +116,4 @@ class Observable<T = unknown> {
 
 /* EXPORT */
 
-export default Observable;
+export default Observable

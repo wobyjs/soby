@@ -41,10 +41,10 @@
   ],
   "devDependencies": {
     "benchloop": "^2.1.1",
-    "fava": "^0.3.2",
+    "fava": "^0.3.5",
     "js-simple-mangler": "^2.0.0",
     "scex": "^1.1.0",
-    "tsex": "^3.2.1",
-    "typescript": "^5.4.3"
+    "tsex": "^4.0.2",
+    "typescript": "^5.8.3"
   }
 }

@@ -1,17 +1,18 @@
 
 /* IMPORT */
 
-import {UNAVAILABLE} from '~/constants';
-import {OBSERVER, OWNER, setObserver, setOwner} from '~/context';
-import {lazyArrayEachRight} from '~/lazy';
-import {castError} from '~/utils';
-import type {SYMBOL_SUSPENSE} from '~/symbols';
-import type {IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue} from '~/types';
+import { UNAVAILABLE } from '~/constants'
+import { OBSERVER, OWNER, setObserver, setOwner } from '~/context'
+import { lazyArrayEachRight } from '~/lazy'
+import { castError } from '~/utils'
+import type { SYMBOL_SUSPENSE } from '~/symbols'
+import type { IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue } from '~/types'
+import { callStack } from '~/methods/debugger'
 
 /* HELPERS */
 
-const onCleanup = ( cleanup: Callable<CleanupFunction> ): void => cleanup.call ( cleanup );
-const onDispose = ( owner: IOwner ): void => owner.dispose ( true );
+const onCleanup = (cleanup: Callable<CleanupFunction>): void => cleanup.call(cleanup, callStack())
+const onDispose = (owner: IOwner): void => owner.dispose(true)
 
 /* MAIN */
 
@@ -21,8 +22,8 @@ class Owner {
 
   /* VARIABLES */
 
-  parent?: IOwner;
-  context?: Contexts;
+  parent?: IOwner
+  context?: Contexts
   disposed: boolean = false;
   cleanups: LazyArray<Callable<CleanupFunction>> = undefined;
   errorHandler: LazyValue<ErrorFunction> = undefined;
@@ -33,75 +34,75 @@ class Owner {
 
   /* API */
 
-  catch ( error: Error, silent: boolean ): boolean {
+  catch(error: Error, silent: boolean): boolean {
 
-    const {errorHandler} = this;
+    const { errorHandler } = this
 
-    if ( errorHandler ) {
+    if (errorHandler) {
 
-      errorHandler ( error ); //TODO: This assumes that the error handler won't throw immediately, which we know, but Owner shouldn't know
+      errorHandler(error) //TODO: This assumes that the error handler won't throw immediately, which we know, but Owner shouldn't know
 
-      return true;
+      return true
 
     } else {
 
-      if ( this.parent?.catch ( error, true ) ) return true;
+      if (this.parent?.catch(error, true)) return true
 
-      if ( silent ) return false;
+      if (silent) return false
 
       // console.error ( error.stack ); // <-- Log "error.stack" to better understand where the error happened
 
-      throw error;
+      throw error
 
     }
 
   }
 
-  dispose ( deep: boolean ): void {
+  dispose(deep: boolean): void {
 
-    lazyArrayEachRight ( this.contexts, onDispose );
-    lazyArrayEachRight ( this.observers, onDispose );
-    lazyArrayEachRight ( this.suspenses, onDispose );
-    lazyArrayEachRight ( this.cleanups, onCleanup );
+    lazyArrayEachRight(this.contexts, onDispose)
+    lazyArrayEachRight(this.observers, onDispose)
+    lazyArrayEachRight(this.suspenses, onDispose)
+    lazyArrayEachRight(this.cleanups, onCleanup)
 
-    this.cleanups = undefined;
-    this.disposed = deep;
-    this.errorHandler = undefined;
-    this.observers = undefined;
-    this.suspenses = undefined;
-
-  }
-
-  get ( symbol: typeof SYMBOL_SUSPENSE ): ISuspense | undefined;
-  get ( symbol: symbol ): any;
-  get ( symbol: symbol ) {
-
-    return this.context?.[symbol];
+    this.cleanups = undefined
+    this.disposed = deep
+    this.errorHandler = undefined
+    this.observers = undefined
+    this.suspenses = undefined
 
   }
 
-  wrap <T> ( fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined ): T {
+  get(symbol: typeof SYMBOL_SUSPENSE): ISuspense | undefined
+  get(symbol: symbol): any
+  get(symbol: symbol) {
 
-    const ownerPrev = OWNER;
-    const observerPrev = OBSERVER;
+    return this.context?.[symbol]
 
-    setOwner ( owner );
-    setObserver ( observer );
+  }
+
+  wrap<T>(fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Error): T {
+
+    const ownerPrev = OWNER
+    const observerPrev = OBSERVER
+
+    setOwner(owner)
+    setObserver(observer)
 
     try {
 
-      return fn ();
+      return fn(stack)
 
-    } catch ( error: unknown ) {
+    } catch (error: unknown) {
 
-      this.catch ( castError ( error ), false ); // Bubbling the error up
+      this.catch(castError(error), false) // Bubbling the error up
 
-      return UNAVAILABLE; // Returning a value that is the least likely to cause bugs
+      return UNAVAILABLE // Returning a value that is the least likely to cause bugs
 
     } finally {
 
-      setOwner ( ownerPrev );
-      setObserver ( observerPrev );
+      setOwner(ownerPrev)
+      setObserver(observerPrev)
 
     }
 
@@ -111,4 +112,4 @@ class Owner {
 
 /* EXPORT */
 
-export default Owner;
+export default Owner

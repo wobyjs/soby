@@ -1,73 +1,75 @@
 
 /* MAIN */
 
-const castArray = <T> ( value: T[] | T ): T[] => {
+import type { DisposeFunction } from "./types"
 
-  return isArray ( value ) ? value : [value];
+const castArray = <T>(value: T[] | T): T[] => {
 
-};
+  return isArray(value) ? value : [value]
 
-const castError = ( error: unknown ): Error => {
+}
 
-  if ( error instanceof Error ) return error;
+const castError = (error: unknown): Error => {
 
-  if ( typeof error === 'string' ) return new Error ( error );
+  if (error instanceof Error) return error
 
-  return new Error ( 'Unknown error' );
+  if (typeof error === 'string') return new Error(error)
 
-};
+  return new Error('Unknown error')
 
-const {is} = Object;
+}
 
-const {isArray} = Array;
+const { is } = Object
 
-const isEqual = ( a: unknown[], b: unknown[] ): boolean => {
+const { isArray } = Array
 
-  if ( a.length !== b.length ) return false;
+const isEqual = (a: unknown[], b: unknown[]): boolean => {
 
-  for ( let i = 0, l = a.length; i < l; i++ ) {
+  if (a.length !== b.length) return false
 
-    const valueA = a[i];
-    const valueB = b[i];
+  for (let i = 0, l = a.length; i < l; i++) {
 
-    if ( !is ( valueA, valueB ) ) return false;
+    const valueA = a[i]
+    const valueB = b[i]
+
+    if (!is(valueA, valueB)) return false
 
   }
 
-  return true;
+  return true
 
-};
+}
 
-const isFunction = ( value: unknown ): value is Function => {
+const isFunction = (value: unknown): value is Function => {
 
-  return typeof value === 'function';
+  return typeof value === 'function'
 
-};
+}
 
-const isObject = ( value: unknown ): value is Record<number | string | symbol, unknown> => {
+const isObject = (value: unknown): value is Record<number | string | symbol, unknown> => {
 
-  return ( value !== null ) && ( typeof value === 'object' );
+  return (value !== null) && (typeof value === 'object')
 
-};
+}
 
-const isSymbol = ( value: unknown ): value is symbol => {
+const isSymbol = (value: unknown): value is symbol => {
 
-  return typeof value === 'symbol';
+  return typeof value === 'symbol'
 
-};
+}
 
-const noop = (): void => {
+const noop = (stack?: Error, dispose?: DisposeFunction): void => {
 
-  return;
+  return
 
-};
+}
 
 const nope = (): false => {
 
-  return false;
+  return false
 
-};
+}
 
 /* EXPORT */
 
-export {castArray, castError, is, isArray, isEqual, isFunction, isObject, isSymbol, noop, nope};
+export { castArray, castError, is, isArray, isEqual, isFunction, isObject, isSymbol, noop, nope }

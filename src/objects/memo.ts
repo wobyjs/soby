@@ -1,10 +1,11 @@
 
 /* IMPORT */
 
-import {DIRTY_MAYBE_YES, UNAVAILABLE, UNINITIALIZED} from '~/constants';
-import Observable from '~/objects/observable';
-import Observer from '~/objects/observer';
-import type {IObservable, MemoFunction, MemoOptions} from '~/types';
+import { DIRTY_MAYBE_YES, UNAVAILABLE, UNINITIALIZED } from '~/constants'
+import { callStack } from '~/methods/debugger'
+import Observable from '~/objects/observable'
+import Observer from '~/objects/observer'
+import type { IObservable, MemoFunction, MemoOptions } from '~/types'
 
 /* MAIN */
 
@@ -12,24 +13,26 @@ class Memo<T = unknown> extends Observer {
 
   /* VARIABLES */
 
-  fn: MemoFunction<T>;
-  observable: IObservable<T>;
-  sync?: boolean;
+  fn: MemoFunction<T>
+  observable: IObservable<T>
+  sync?: boolean
 
   /* CONSTRUCTOR */
 
-  constructor ( fn: MemoFunction<T>, options?: MemoOptions<T> ) {
+  constructor(fn: MemoFunction<T>, options?: MemoOptions<T>) {
 
-    super ();
+    super()
 
-    this.fn = fn;
-    this.observable = new Observable<T> ( UNINITIALIZED, options, this );
+    this.fn = fn
+    this.observable = new Observable<T>(UNINITIALIZED, options, this)
 
-    if ( options?.sync === true ) {
+    const { stack } = options ?? { stack: callStack('Stack should be initialized in options') }
 
-      this.sync = true;
+    if (options?.sync === true) {
 
-      this.update ();
+      this.sync = true
+
+      this.update(stack)
 
     }
 
@@ -37,35 +40,35 @@ class Memo<T = unknown> extends Observer {
 
   /* API */
 
-  run (): void {
+  run(stack?: Error): void {
 
-    const result = super.refresh ( this.fn );
+    const result = super.refresh(this.fn, stack)
 
-    if ( !this.disposed && this.observables.empty () ) {
+    if (!this.disposed && this.observables.empty()) {
 
-      this.disposed = true;
+      this.disposed = true
 
     }
 
-    if ( result !== UNAVAILABLE ) {
+    if (result !== UNAVAILABLE) {
 
-      this.observable.set ( result );
+      this.observable.set(result, stack)
 
     }
 
   }
 
-  stale ( status: number ): void {
+  stale(status: number, stack?: Error): void {
 
-    const statusPrev = this.status;
+    const statusPrev = this.status
 
-    if ( statusPrev >= status ) return;
+    if (statusPrev >= status) return
 
-    this.status = status;
+    this.status = status
 
-    if ( statusPrev === DIRTY_MAYBE_YES ) return;
+    if (statusPrev === DIRTY_MAYBE_YES) return
 
-    this.observable.stale ( DIRTY_MAYBE_YES );
+    this.observable.stale(DIRTY_MAYBE_YES, stack)
 
   }
 
@@ -73,4 +76,4 @@ class Memo<T = unknown> extends Observer {
 
 /* EXPORT */
 
-export default Memo;
+export default Memo

@@ -1,24 +1,25 @@
 
 /* IMPORT */
 
-import {OWNER} from '~/context';
-import Context from '~/objects/context';
-import {isSymbol, noop} from '~/utils';
-import type {ContextFunction, Contexts} from '~/types';
+import { OWNER } from '~/context'
+import Context from '~/objects/context'
+import { isSymbol, noop } from '~/utils'
+import type { ContextFunction, Contexts } from '~/types'
+import { callStack } from './debugger'
 
 /* MAIN */
 
-function context <T> ( symbol: symbol ): T | undefined;
-function context <T> ( context: Contexts, fn: ContextFunction<T> ): T;
-function context <T> ( symbolOrContext: symbol | Contexts, fn?: ContextFunction<T> ) {
+function context<T>(symbol: symbol): T | undefined
+function context<T>(context: Contexts, fn: ContextFunction<T>): T
+function context<T>(symbolOrContext: symbol | Contexts, fn?: ContextFunction<T>) {
 
-  if ( isSymbol ( symbolOrContext ) ) {
+  if (isSymbol(symbolOrContext)) {
 
-    return OWNER.context[symbolOrContext];
+    return OWNER.context[symbolOrContext]
 
   } else {
-
-    return new Context ( symbolOrContext ).wrap ( fn || noop );
+    const stack = callStack()
+    return new Context(symbolOrContext).wrap(fn || noop, undefined as any, undefined, stack)
 
   }
 
@@ -26,4 +27,4 @@ function context <T> ( symbolOrContext: symbol | Contexts, fn?: ContextFunction<
 
 /* EXPORT */
 
-export default context;
+export default context

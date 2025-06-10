@@ -1,14 +1,15 @@
 
 /* IMPORT */
 
-import {DIRTY_MAYBE_YES, DIRTY_YES} from '~/constants';
-import {OWNER} from '~/context';
-import {lazyArrayEach, lazyArrayPush, lazySetEach} from '~/lazy';
-import Effect from '~/objects/effect';
-import Owner from '~/objects/owner';
-import {SYMBOL_SUSPENSE} from '~/symbols';
-import {isFunction} from '~/utils';
-import type {IObservable, IObserver, IOwner, IRoot, ISuspense, SuspenseFunction, Contexts} from '~/types';
+import { DIRTY_MAYBE_YES, DIRTY_YES } from '~/constants'
+import { OWNER } from '~/context'
+import { lazyArrayEach, lazyArrayPush, lazySetEach } from '~/lazy'
+import Effect from '~/objects/effect'
+import Owner from '~/objects/owner'
+import { SYMBOL_SUSPENSE } from '~/symbols'
+import { isFunction } from '~/utils'
+import type { IObservable, IObserver, IOwner, IRoot, ISuspense, SuspenseFunction, Contexts, IContext, ISuperRoot } from '~/types'
+import { callStack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -18,77 +19,77 @@ class Suspense extends Owner {
 
   parent: IOwner = OWNER;
   context: Contexts = { ...OWNER.context, [SYMBOL_SUSPENSE]: this };
-  observable?: IObservable<boolean>;
-  suspended: number;
+  observable?: IObservable<boolean>
+  suspended: number
 
   /* CONSTRUCTOR */
 
-  constructor () {
+  constructor() {
 
-    super ();
+    super()
 
-    lazyArrayPush ( this.parent, 'suspenses', this );
+    lazyArrayPush(this.parent, 'suspenses', this)
 
-    this.suspended = ( OWNER.get ( SYMBOL_SUSPENSE )?.suspended || 0 );
+    this.suspended = (OWNER.get(SYMBOL_SUSPENSE)?.suspended || 0)
 
   }
 
   /* API */
 
-  toggle ( force: boolean ): void {
+  toggle(force: boolean): void {
 
-    if ( !this.suspended && !force ) return; // Already suspended, this can happen at instantion time
+    if (!this.suspended && !force) return // Already suspended, this can happen at instantion time
 
-    const suspendedPrev = this.suspended;
-    const suspendedNext = suspendedPrev + ( force ? 1 : -1 );
+    const suspendedPrev = this.suspended
+    const suspendedNext = suspendedPrev + (force ? 1 : -1)
 
-    this.suspended = suspendedNext;
+    this.suspended = suspendedNext
 
-    if ( !!suspendedPrev === !!suspendedNext ) return; // Same state, nothing to pause or resume
+    if (!!suspendedPrev === !!suspendedNext) return // Same state, nothing to pause or resume
 
     /* NOTIFYING OBSERVERS, ROOTS AND SUSPENSES */
+    const stack = callStack()
+    this.observable?.set(!!suspendedNext, stack)
 
-    this.observable?.set ( !!suspendedNext );
+    const notifyOwner = (owner: IOwner): void => {
+      lazyArrayEach(owner.contexts, notifyOwner)
+      lazyArrayEach(owner.observers, notifyObserver)
+      lazyArrayEach(owner.suspenses, notifySuspense)
+      lazySetEach(owner.roots, notifyRoot)
+    }
 
-    const notifyOwner = ( owner: IOwner ): void => {
-      lazyArrayEach ( owner.contexts, notifyOwner );
-      lazyArrayEach ( owner.observers, notifyObserver );
-      lazyArrayEach ( owner.suspenses, notifySuspense );
-      lazySetEach ( owner.roots, notifyRoot );
-    };
-
-    const notifyObserver = ( observer: IObserver ): void => {
-      if ( observer instanceof Effect ) {
-        if ( observer.status === DIRTY_MAYBE_YES || observer.status === DIRTY_YES ) {
-          if ( observer.init ) {
-            observer.update ();
+    const notifyObserver = (observer: IObserver): void => {
+      if (observer instanceof Effect) {
+        if (observer.status === DIRTY_MAYBE_YES || observer.status === DIRTY_YES) {
+          if (observer.init) {
+            observer.update(stack)
           } else {
-            observer.schedule ();
+            observer.schedule(stack)
           }
         }
       }
-      notifyOwner ( observer );
-    };
+      notifyOwner(observer)
+    }
 
-    const notifyRoot = ( root: IRoot | (() => IRoot[]) ): void => {
-      if ( isFunction ( root ) ) {
-        root ().forEach ( notifyOwner );
+    const notifyRoot = (root: IRoot | (() => IRoot[])): void => {
+      if (isFunction(root)) {
+        root().forEach(notifyOwner)
       } else {
-        notifyOwner ( root );
+        notifyOwner(root)
       }
-    };
+    }
 
-    const notifySuspense = ( suspense: ISuspense ): void => {
-      suspense.toggle ( force );
-    };
+    const notifySuspense = (suspense: ISuspense): void => {
+      suspense.toggle(force)
+    }
 
-    notifyOwner ( this );
+    notifyOwner(this)
 
   }
 
-  wrap <T> ( fn: SuspenseFunction<T> ): T {
+  wrap<T>(fn: SuspenseFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Error): T {
 
-    return super.wrap ( fn, this, undefined );
+    return super.wrap(fn, this, undefined, stack as any)
 
   }
 
@@ -96,4 +97,4 @@ class Suspense extends Owner {
 
 /* EXPORT */
 
-export default Suspense;
+export default Suspense

@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
-import {BATCH} from '~/context';
-import type {IEffect} from '~/types';
+import { BATCH } from '~/context'
+import type { IEffect } from '~/types'
 
 /* MAIN */
 
@@ -12,34 +12,34 @@ class Scheduler {
 
   /* VARIABLES */
 
-  waiting: IEffect[] = [];
+  waiting: [IEffect, Error?][] = [];
 
   locked: boolean = false;
   queued: boolean = false;
 
   /* QUEUING API */
 
-  flush = (): void => {
+  flush = (stack?: Error): void => {
 
-    if ( this.locked ) return;
+    if (this.locked) return
 
-    if ( !this.waiting.length ) return;
+    if (!this.waiting.length) return
 
     try {
 
-      this.locked = true;
+      this.locked = true
 
-      while ( true ) {
+      while (true) {
 
-        const queue = this.waiting;
+        const queue = this.waiting
 
-        if ( !queue.length ) break;
+        if (!queue.length) break
 
-        this.waiting = [];
+        this.waiting = []
 
-        for ( let i = 0, l = queue.length; i < l; i++ ) {
+        for (let i = 0, l = queue.length; i < l; i++) {
 
-          queue[i].update ();
+          queue[i][0].update(queue[i][1])
 
         }
 
@@ -47,53 +47,53 @@ class Scheduler {
 
     } finally {
 
-      this.locked = false;
+      this.locked = false
 
     }
 
   }
 
-  queue = (): void => {
+  queue = (stack?: Error): void => {
 
-    if ( this.queued ) return;
+    if (this.queued) return
 
-    this.queued = true;
+    this.queued = true
 
-    this.resolve ();
+    this.resolve(stack)
 
   }
 
-  resolve = (): void => {
+  resolve = (stack?: Error): void => {
 
-    queueMicrotask ( () => {
+    queueMicrotask(() => {
 
-      queueMicrotask ( () => {
+      queueMicrotask(() => {
 
-        if ( BATCH ) {
+        if (BATCH) {
 
-          BATCH.finally ( this.resolve );
+          BATCH.finally(() => this.resolve(stack))
 
         } else {
 
-          this.queued = false;
+          this.queued = false
 
-          this.flush ();
+          this.flush(stack)
 
         }
 
-      });
+      })
 
-    });
+    })
 
   }
 
   /* SCHEDULING API */
 
-  schedule = ( effect: IEffect ): void => {
+  schedule = (effect: IEffect, stack?: Error): void => {
 
-    this.waiting.push ( effect );
+    this.waiting.push([effect, stack])
 
-    this.queue ();
+    this.queue(stack)
 
   }
 
@@ -101,4 +101,4 @@ class Scheduler {
 
 /* EXPORT */
 
-export default new Scheduler ();
+export default new Scheduler()

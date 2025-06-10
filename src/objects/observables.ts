@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import type {IObservable, IObserver} from '~/types';
+import type { IObservable, IObserver } from '~/types'
 
 /* MAIN */
 
@@ -12,127 +12,127 @@ class ObservablesArray {
 
   /* VARIABLES */
 
-  observer: IObserver;
-  observables: IObservable[];
-  observablesIndex: number;
+  observer: IObserver
+  observables: IObservable[]
+  observablesIndex: number
 
   /* CONSTRUCTOR */
 
-  constructor ( observer: IObserver ) {
+  constructor(observer: IObserver) {
 
-    this.observer = observer;
-    this.observables = [];
-    this.observablesIndex = 0;
+    this.observer = observer
+    this.observables = []
+    this.observablesIndex = 0
 
   }
 
   /* API */
 
-  dispose ( deep: boolean ): void {
+  dispose(deep: boolean): void {
 
-    if ( deep ) {
+    if (deep) {
 
-      const {observer, observables} = this;
+      const { observer, observables } = this
 
-      for ( let i = 0; i < observables.length; i++ ) {
+      for (let i = 0; i < observables.length; i++) {
 
-        observables[i].observers.delete ( observer );
-
-      }
-
-    }
-
-    this.observablesIndex = 0;
-
-  }
-
-  postdispose (): void {
-
-    const {observer, observables, observablesIndex} = this;
-    const observablesLength = observables.length;
-
-    if ( observablesIndex < observablesLength ) {
-
-      for ( let i = observablesIndex; i < observablesLength; i++ ) {
-
-        observables[i].observers.delete ( observer );
-
-      }
-
-      observables.length = observablesIndex;
-
-    }
-
-  }
-
-  empty (): boolean {
-
-    return !this.observables.length;
-
-  }
-
-  has ( observable: IObservable<any> ): boolean {
-
-    const index = this.observables.indexOf ( observable );
-
-    return index >= 0 && index < this.observablesIndex;
-
-  }
-
-  link ( observable: IObservable<any> ): void {
-
-    const {observer, observables, observablesIndex} = this;
-    const observablesLength = observables.length;
-
-    if ( observablesLength > 0 ) {
-
-      if ( observables[observablesIndex] === observable ) {
-
-        this.observablesIndex += 1;
-
-        return;
-
-      }
-
-      const index = observables.indexOf ( observable );
-
-      if ( index >= 0 && index < observablesIndex ) {
-
-        return;
-
-      }
-
-      if ( observablesIndex < observablesLength - 1 ) {
-
-        this.postdispose ();
-
-      } else if ( observablesIndex === observablesLength - 1 ) {
-
-        observables[observablesIndex].observers.delete ( observer );
+        observables[i].observers.delete(observer)
 
       }
 
     }
 
-    observable.observers.add ( observer );
+    this.observablesIndex = 0
 
-    observables[this.observablesIndex++] = observable;
+  }
 
-    if ( observablesIndex === 128 ) { // Switching to a Set, as indexOf checks may get artbirarily expensive otherwise
+  postdispose(): void {
 
-      observer.observables = new ObservablesSet ( observer, observables );
+    const { observer, observables, observablesIndex } = this
+    const observablesLength = observables.length
+
+    if (observablesIndex < observablesLength) {
+
+      for (let i = observablesIndex; i < observablesLength; i++) {
+
+        observables[i].observers.delete(observer)
+
+      }
+
+      observables.length = observablesIndex
 
     }
 
   }
 
-  update (): void {
+  empty(): boolean {
 
-    const {observables} = this;
+    return !this.observables.length
 
-    for ( let i = 0, l = observables.length; i < l; i++ ) {
+  }
 
-      observables[i].parent?.update ();
+  has(observable: IObservable<any>): boolean {
+
+    const index = this.observables.indexOf(observable)
+
+    return index >= 0 && index < this.observablesIndex
+
+  }
+
+  link(observable: IObservable<any>): void {
+
+    const { observer, observables, observablesIndex } = this
+    const observablesLength = observables.length
+
+    if (observablesLength > 0) {
+
+      if (observables[observablesIndex] === observable) {
+
+        this.observablesIndex += 1
+
+        return
+
+      }
+
+      const index = observables.indexOf(observable)
+
+      if (index >= 0 && index < observablesIndex) {
+
+        return
+
+      }
+
+      if (observablesIndex < observablesLength - 1) {
+
+        this.postdispose()
+
+      } else if (observablesIndex === observablesLength - 1) {
+
+        observables[observablesIndex].observers.delete(observer)
+
+      }
+
+    }
+
+    observable.observers.add(observer)
+
+    observables[this.observablesIndex++] = observable
+
+    if (observablesIndex === 128) { // Switching to a Set, as indexOf checks may get artbirarily expensive otherwise
+
+      observer.observables = new ObservablesSet(observer, observables)
+
+    }
+
+  }
+
+  update(stack?: Error): void {
+
+    const { observables } = this
+
+    for (let i = 0, l = observables.length; i < l; i++) {
+
+      observables[i].parent?.update(stack)
 
     }
 
@@ -144,68 +144,68 @@ class ObservablesSet {
 
   /* VARIABLES */
 
-  observer: IObserver;
-  observables: Set<IObservable>;
+  observer: IObserver
+  observables: Set<IObservable>
 
   /* CONSTRUCTOR */
 
-  constructor ( observer: IObserver, observables: IObservable[] ) {
+  constructor(observer: IObserver, observables: IObservable[]) {
 
-    this.observer = observer;
-    this.observables = new Set ( observables );
+    this.observer = observer
+    this.observables = new Set(observables)
 
   }
 
   /* API */
 
-  dispose ( deep: boolean ): void {
+  dispose(deep: boolean): void {
 
-    for ( const observable of this.observables ) {
+    for (const observable of this.observables) {
 
-      observable.observers.delete ( this.observer );
+      observable.observers.delete(this.observer)
 
     }
 
   }
 
-  postdispose (): void {
+  postdispose(): void {
 
-    return;
-
-  }
-
-  empty (): boolean {
-
-    return !this.observables.size;
+    return
 
   }
 
-  has ( observable: IObservable ): boolean {
+  empty(): boolean {
 
-    return this.observables.has ( observable );
-
-  }
-
-  link ( observable: IObservable<any> ): void {
-
-    const {observer, observables} = this;
-    const sizePrev = observables.size;
-
-    observable.observers.add ( observer );
-
-    const sizeNext = observables.size;
-
-    if ( sizePrev === sizeNext ) return; // Cheaper than Set.has+Set.add
-
-    observables.add ( observable );
+    return !this.observables.size
 
   }
 
-  update (): void {
+  has(observable: IObservable): boolean {
 
-    for ( const observable of this.observables ) {
+    return this.observables.has(observable)
 
-      observable.parent?.update ();
+  }
+
+  link(observable: IObservable<any>): void {
+
+    const { observer, observables } = this
+    const sizePrev = observables.size
+
+    observable.observers.add(observer)
+
+    const sizeNext = observables.size
+
+    if (sizePrev === sizeNext) return // Cheaper than Set.has+Set.add
+
+    observables.add(observable)
+
+  }
+
+  update(stack?: Error): void {
+
+    for (const observable of this.observables) {
+
+      observable.parent?.update(stack)
 
     }
 
@@ -215,4 +215,4 @@ class ObservablesSet {
 
 /* EXPORT */
 
-export {ObservablesArray, ObservablesSet};
+export { ObservablesArray, ObservablesSet }
