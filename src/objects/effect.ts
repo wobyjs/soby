@@ -7,6 +7,7 @@ import Scheduler from '~/objects/scheduler.async'
 import { SYMBOL_SUSPENSE } from '~/symbols'
 import { isFunction } from '~/utils'
 import type { ISuspense, EffectFunction, EffectOptions } from '~/types'
+import { callStack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -45,7 +46,7 @@ class Effect extends Observer {
 
     }
 
-    const { stack } = options ?? { stack: new Error('Stack should be initialized in options') }
+    const { stack } = options ?? { stack: callStack('Stack should be initialized in options') }
 
     if (options?.sync === 'init') {
 
