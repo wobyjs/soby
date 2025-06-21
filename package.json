@@ -2,7 +2,7 @@
   "name": "soby",
   "repository": "github:wongchichong/soby",
   "description": "A rich Observable/Signal implementation, the brilliant primitive you need to build a powerful reactive system.",
-  "version": "15.1.5",
+  "version": "15.1.6",
   "type": "module",
   "sideEffects": false,
   "main": "dist/index.js",
