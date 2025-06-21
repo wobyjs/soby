@@ -32,7 +32,7 @@
     "test": "tsex test",
     "test:watch": "tsex test --watch",
     "updates": "node tasks/updates.js",
-    "prepublishOnly": "scex -s clean compile compile:mangle test"
+    "//prepublishOnly": "scex -s clean compile compile:mangle test"
   },
   "keywords": [
     "observable",
