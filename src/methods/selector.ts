@@ -12,7 +12,7 @@ import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { is } from '~/utils'
 import type { SelectorFunction, ObservableReadonly } from '~/types'
-import { callStack } from './debugger'
+import { callStack, Stack } from './debugger'
 
 /* HELPERS */
 
@@ -61,7 +61,7 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
   let selectedValue: T = untrack(source)
 
   const stack = callStack()
-  effect((stack?: Error) => {
+  effect((stack?: Stack) => {
 
     const valuePrev = selectedValue
     const valueNext = source()
@@ -70,8 +70,8 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     selectedValue = valueNext
 
-    selecteds.get(valuePrev)?.set(false, stack)
-    selecteds.get(valueNext)?.set(true, stack)
+    selecteds.get(valuePrev)?.set(false)
+    selecteds.get(valueNext)?.set(true)
 
   }, { suspense: false, sync: true, stack })
 

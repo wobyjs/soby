@@ -9,7 +9,7 @@ import Owner from '~/objects/owner'
 import { SYMBOL_SUSPENSE } from '~/symbols'
 import { isFunction } from '~/utils'
 import type { IObservable, IObserver, IOwner, IRoot, ISuspense, SuspenseFunction, Contexts, IContext, ISuperRoot } from '~/types'
-import { callStack } from '~/methods/debugger'
+import { callStack, Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -49,7 +49,7 @@ class Suspense extends Owner {
 
     /* NOTIFYING OBSERVERS, ROOTS AND SUSPENSES */
     const stack = callStack()
-    this.observable?.set(!!suspendedNext, stack)
+    this.observable?.set(!!suspendedNext)
 
     const notifyOwner = (owner: IOwner): void => {
       lazyArrayEach(owner.contexts, notifyOwner)
@@ -87,7 +87,7 @@ class Suspense extends Owner {
 
   }
 
-  wrap<T>(fn: SuspenseFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Error): T {
+  wrap<T>(fn: SuspenseFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Stack): T {
 
     return super.wrap(fn, this, undefined, stack as any)
 

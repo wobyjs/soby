@@ -2,6 +2,7 @@
 /* MAIN */
 
 import type { DisposeFunction } from "./types"
+import { Stack } from '~/methods/debugger'
 
 const castArray = <T>(value: T[] | T): T[] => {
 
@@ -58,7 +59,7 @@ const isSymbol = (value: unknown): value is symbol => {
 
 }
 
-const noop = (stack?: Error, dispose?: DisposeFunction): void => {
+const noop = (stack?: Stack, dispose?: DisposeFunction): void => {
 
   return
 

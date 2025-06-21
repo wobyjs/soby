@@ -7,10 +7,11 @@ import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { SYMBOL_SUSPENSE } from '~/symbols'
 import type { ISuspense, ObservableReadonly } from '~/types'
+import type { Stack } from './debugger'
 
 /* MAIN */
 
-const suspended = (stack?: Error): ObservableReadonly<boolean> => {
+const suspended = (stack?: Stack): ObservableReadonly<boolean> => {
 
   const suspense: ISuspense | undefined = OWNER.get(SYMBOL_SUSPENSE)
 

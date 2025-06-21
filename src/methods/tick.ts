@@ -2,10 +2,11 @@
 /* IMPORT */
 
 import Scheduler from '~/objects/scheduler.async'
+import { Stack } from './debugger'
 
 /* MAIN */
 
-const tick = (stack?: Error): void => {
+const tick = (stack?: Stack): void => {
 
   Scheduler.flush(stack)
 

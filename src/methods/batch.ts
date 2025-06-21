@@ -4,6 +4,7 @@
 import { setBatch } from '~/context'
 import { noop } from '~/utils'
 import type { BatchFunction, CallbackFunction } from '~/types'
+import type { Stack } from './debugger'
 
 /* HELPERS */
 
@@ -12,11 +13,11 @@ let resolve: CallbackFunction = noop
 
 /* MAIN */
 
-const batch = async <T>(fn: BatchFunction<T>, stack?: Error): Promise<Awaited<T>> => {
+const batch = async <T>(fn: BatchFunction<T>, stack?: Stack): Promise<Awaited<T>> => {
 
   if (!counter) {
 
-    setBatch(new Promise<Error | void>(r => resolve = r))
+    setBatch(new Promise<Stack | void>(r => resolve = r))
 
   }
 

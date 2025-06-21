@@ -39,13 +39,14 @@ import tryCatch from '~/methods/try_catch'
 import untrack from '~/methods/untrack'
 import untracked from '~/methods/untracked'
 import _with from '~/methods/with'
-export { DEBUGGER } from './methods/debugger'
+export { DEBUGGER, Stack, callStack } from './methods/debugger'
 import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_BOOLEAN, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE, SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_UNCACHED, SYMBOL_UNTRACKED, SYMBOL_UNTRACKED_UNWRAPPED } from '~/symbols'
-import type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions } from '~/types'
+//import type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions } from '~/types'
+export * from './types'
 
 /* EXPORT */
 
 export default $
 export { batch, boolean, cleanup, context, disposed, effect, _for as for, get, _if as if, isBatching, isObservable, isObservableWritable, isStore, memo, observable, owner, readonly, resolve, root, selector, store, suspended, suspense, _switch as switch, ternary, tick, tryCatch, untrack, untracked, _with as with }
 export { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_BOOLEAN, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE, SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_UNCACHED, SYMBOL_UNTRACKED, SYMBOL_UNTRACKED_UNWRAPPED }
-export type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions }
+// export type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions }

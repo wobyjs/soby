@@ -2,6 +2,7 @@
 /* IMPORT */
 
 import type { IObserver } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -11,7 +12,7 @@ class Scheduler {
 
   /* VARIABLES */
 
-  waiting: [IObserver, Error?][] = [];
+  waiting: [IObserver, Stack?][] = [];
 
   counter: number = 0;
   locked: boolean = false;
@@ -68,7 +69,7 @@ class Scheduler {
 
   /* SCHEDULING API */
 
-  schedule = (observer: IObserver, stack?: Error): void => {
+  schedule = (observer: IObserver, stack?: Stack): void => {
 
     this.waiting.push([observer, stack])
 

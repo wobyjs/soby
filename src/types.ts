@@ -1,5 +1,6 @@
 
 /* OBJECTS */
+import type { Stack } from '~/methods/debugger'
 
 type IContext = import('~/objects/context').default
 
@@ -27,15 +28,15 @@ type ISuspense = import('~/objects/suspense').default
 
 type BatchFunction<T = unknown> = () => PromiseMaybe<T>
 
-type CallbackFunction = (stack?: Error) => void
+type CallbackFunction = (stack?: Stack) => void
 
-type CleanupFunction = (stack?: Error) => void
+type CleanupFunction = (stack?: Stack) => void
 
-type ContextFunction<T = unknown> = (stack?: Error) => T
+type ContextFunction<T = unknown> = (stack?: Stack) => T
 
-type DisposeFunction = (stack?: Error) => void
+type DisposeFunction = (stack?: Stack) => void
 
-type EffectFunction = (stack?: Error) => CleanupFunction | void
+type EffectFunction = (stack?: Stack) => CleanupFunction | void
 
 type ErrorFunction = (error: Error) => void
 
@@ -45,13 +46,13 @@ type MapFunction<T = unknown, R = unknown> = (value: T, index: FunctionMaybe<num
 
 type MapValueFunction<T = unknown, R = unknown> = (value: Indexed<T>, index: FunctionMaybe<number>) => R
 
-type MemoFunction<T = unknown> = (stack?: Error) => T
+type MemoFunction<T = unknown> = (stack?: Stack) => T
 
-type ObserverFunction<T = unknown> = (stack?: Error) => T
+type ObserverFunction<T = unknown> = (stack?: Stack) => T
 
 type SelectorFunction<T = unknown> = (value: T) => ObservableReadonly<boolean>
 
-type SuspenseFunction<T = unknown> = (stack?: Error) => T
+type SuspenseFunction<T = unknown> = (stack?: Stack) => T
 
 type TryCatchFunction<T = unknown> = ({ error, reset }: { error: Error, reset: DisposeFunction }) => T
 
@@ -61,18 +62,18 @@ type UntrackedFunction<Arguments extends unknown[], T = unknown> = (...args: Arg
 
 type UpdateFunction<T = unknown> = (value: T) => T
 
-type WithFunction<T = unknown> = (stack?: Error) => T
+type WithFunction<T = unknown> = (stack?: Stack) => T
 
-type WrappedFunction<T = unknown> = (stack?: Error) => T
+type WrappedFunction<T = unknown> = (stack?: Stack) => T
 
-type WrappedDisposableFunction<T = unknown> = (stack?: Error, dispose?: DisposeFunction) => T
+type WrappedDisposableFunction<T = unknown> = (stack?: Stack, dispose?: DisposeFunction) => T
 
 /* EFFECT */
 
 type EffectOptions = {
   suspense?: boolean,
   sync?: boolean | 'init'
-  stack?: Error
+  stack?: Stack
 }
 
 /* FOR */
@@ -87,7 +88,7 @@ type ForOptions = {
 type MemoOptions<T = unknown> = {
   equals?: EqualsFunction<T> | false,
   sync?: boolean
-  stack?: Error
+  stack?: Stack
 }
 
 /* OBSERVABLE */

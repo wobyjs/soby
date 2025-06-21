@@ -66,12 +66,12 @@ class CacheUnkeyed<T, R> {
     let pooled = 0
     let poolable = Math.max(0, this.pooled ? this.poolMaxSize - this.pool.length : 0)
 
-    const stack = callStack()
+    // const stack = callStack()
     this.cache.forEach(mapped => {
 
       if (poolable > 0 && pooled++ < poolable) {
 
-        mapped.suspended?.set(true, stack)
+        mapped.suspended?.set(true)
 
         this.pool.push(mapped)
 
@@ -135,7 +135,7 @@ class CacheUnkeyed<T, R> {
           cache.delete(value)
           cacheNext.set(value, cached)
 
-          cached.index?.set(i, stack)
+          cached.index?.set(i)
 
           results[i] = cached.result! //TSC
 
@@ -167,8 +167,8 @@ class CacheUnkeyed<T, R> {
           cache.delete(key)
           cacheNext.set(value, mapped)
 
-          mapped.index?.set(index, stack)
-          mapped.value?.set(value, stack)
+          mapped.index?.set(index)
+          mapped.value?.set(value)
 
           results[index] = mapped.result! //TSC
 
@@ -186,9 +186,9 @@ class CacheUnkeyed<T, R> {
 
         mapped = pool.pop()! //TSC
 
-        mapped.index?.set(index, stack)
-        mapped.value?.set(value, stack)
-        mapped.suspended?.set(false, stack)
+        mapped.index?.set(index)
+        mapped.value?.set(value)
+        mapped.suspended?.set(false)
 
         results[index] = mapped.result! //TSC
 
@@ -209,8 +209,12 @@ class CacheUnkeyed<T, R> {
 
           const observable = mapped.value = new Observable(value)
           const suspended = pooled ? new Observable(false) : undefined
-          const $value = memo(() => get(observable.get(stack))) as Indexed<T> //TSC
-          const result = results[index] = suspended ? suspense(() => suspended.get(stack), () => resolve(fn($value, $index)), stack) : resolve(fn($value, $index))
+          if (suspended)
+            suspended.stack = stack
+
+          const $value = memo(() => get(observable.get())) as Indexed<T> //TSC
+
+          const result = results[index] = suspended ? suspense(() => suspended.get(), () => resolve(fn($value, $index)), stack) : resolve(fn($value, $index))
 
           mapped.value = observable
           mapped.result = result

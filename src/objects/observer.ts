@@ -7,6 +7,7 @@ import { lazyArrayPush } from '~/lazy'
 import { ObservablesArray, ObservablesSet } from '~/objects/observables'
 import Owner from '~/objects/owner'
 import type { IOwner, ObserverFunction, Contexts } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -46,7 +47,7 @@ class Observer extends Owner {
 
   }
 
-  refresh<T>(fn: ObserverFunction<T>, stack?: Error): T {
+  refresh<T>(fn: ObserverFunction<T>, stack?: Stack): T {
 
     this.dispose(false)
 
@@ -64,19 +65,19 @@ class Observer extends Owner {
 
   }
 
-  run(stack?: Error): void {
+  run(stack?: Stack): void {
 
     throw new Error('Abstract method')
 
   }
 
-  stale(status: number, stack?: Error): void {
+  stale(status: number, stack?: Stack): void {
 
     throw new Error('Abstract method')
 
   }
 
-  update(stack?: Error): void {
+  update(stack?: Stack): void {
 
     if (this.disposed) return // Disposed, it shouldn't be updated again
 

@@ -1,11 +1,11 @@
-# Oby
+# Soby
 
 A rich Observable/Signal implementation, the brilliant primitive you need to build a powerful reactive system.
 
 ## Install
 
 ```sh
-npm install --save oby
+npm install --save soby
 ```
 
 ## APIs
@@ -70,7 +70,7 @@ function $ <T> ( value: T, options?: ObservableOptions<T> ): Observable<T>;
 This is how to use it:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create an Observable without an initial value
 
@@ -128,15 +128,15 @@ function batch <T> ( fn: T ): Promise<Awaited<T>>;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Batch updates until the provided async function resolves
 
 const o = $(0);
 
-$.effect ( () => {
+$.effect ( (stack) => {
 
-  console.log ( o () );
+  console.log ( o (), stack );
 
 });
 
@@ -170,7 +170,7 @@ function cleanup ( fn: () => void ): void;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Attaching some cleanup functions to an effect
 
@@ -183,15 +183,11 @@ $.effect ( () => {
   document.body.addEventListener ( 'click', cb );
 
   $.cleanup ( () => { // Registering a cleanup function with the parent
-
     document.body.removeEventListener ( 'click', cb );
-
   });
 
   $.cleanup ( () => { // You can have as many cleanup functions as you want
-
     console.log ( 'cleaned up!' );
-
   });
 
 });
@@ -217,7 +213,7 @@ function context <T> ( context: Record<symbol, any>, fn: () => T ): T; // Write
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Reading and writing some values in the context
 
@@ -266,7 +262,7 @@ function effect ( fn: () => (() => void) | void, options?: EffectOptions ): (() 
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create an asynchronous effect with an automatically registered cleanup function
 
@@ -279,9 +275,7 @@ $.effect ( () => {
   document.body.addEventListener ( 'click', cb );
 
   return () => { // Automatically-registered cleanup function
-
     document.body.removeEventListener ( 'click', cb );
-
   };
 
 });
@@ -289,25 +283,19 @@ $.effect ( () => {
 // Creating a synchronous effect, which is executed and re-executed immediately when needed
 
 $.effect ( () => {
-
   // Do something...
-
 }, { sync: true } );
 
 // Creating an asynchronous effect, but that is executed immediately on creation
 
 $.effect ( () => {
-
   // Do something...
-
 }, { sync: 'init' } );
 
 // Creating an effect that will not be paused by suspense
 
 $.effect ( () => {
-
   // Do something...
-
 }, { suspense: false } );
 ```
 
@@ -326,7 +314,7 @@ function isBatching (): boolean;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Checking if currently batching
 
@@ -356,7 +344,7 @@ function isObservable <T = unknown> ( value: unknown ): value is Observable<T> |
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Checking
 
@@ -379,7 +367,7 @@ function isStore ( value: unknown ): boolean;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Checking
 
@@ -408,7 +396,7 @@ function memo <T> ( fn: () => T, options?: MemoOptions<T> ): ObservableReadonly<
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Make a new memoized Observable
 
@@ -448,7 +436,7 @@ This is just an alias for the `$` function, without all the extra functions atta
 Usage:
 
 ```ts
-import {observable} from 'oby';
+import {observable} from 'soby';
 
 // Creating an Observable
 
@@ -489,7 +477,7 @@ function owner (): Owner;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Check if you are right below the super root or an effect
 
@@ -519,7 +507,7 @@ function root <T> ( fn: ( dispose: () => void ) => T ): T;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create a root and dispose of it
 
@@ -566,7 +554,7 @@ You can just use the reactive object like you would with a regular non-reactive 
 - **Note**: Getters and setters that are assigned to symbols, if for whatever reason you have those, won't be reactive.
 - **Note**: A powerful function is provided, `$.store.on`, for listening to any changes happening _inside_ a store. Changes are batched automatically within a microtask for you. If you use this function it's advisable to not have multiple instances of the same object inside a single store, or you may hit some edge cases where a listener doesn't fire because another path where the same object is available, and where it was edited from, hasn't been discovered yet, since discovery is lazy as otherwise it would be expensive.
 - **Note**: A powerful function is provided, `$.store.reconcile`, that basically merges the content of the second argument into the first one, preserving wrapper objects in the first argument as much as possible, which can avoid many unnecessary re-renderings down the line. Currently getters/setters/symbols from the second argument are ignored, as supporting those would make this function significantly slower, and you most probably don't need them anyway if you are using this function.
-- **Note**: The `$.store.unwrap` function unwraps the top-most proxy layer of the store only, which in most situations is equivalent to deeply unwrapping the store, and the fastest way to do it, except in one important edge case: if you are doing something that causes a proxy to be directly assigned to a property on the underlying unproxied plain object/array, which can happen when writing code like this: `myStore.foo = [myStore.obj]` for example, which should instead be written as `myStore.foo = [store.unwrap ( myStore.obj )]`. If you stumbled on this and you don't want to change your code refer to [this `deepUnwrap` function](https://github.com/vobyjs/oby/issues/8#issuecomment-1755509198).
+- **Note**: The `$.store.unwrap` function unwraps the top-most proxy layer of the store only, which in most situations is equivalent to deeply unwrapping the store, and the fastest way to do it, except in one important edge case: if you are doing something that causes a proxy to be directly assigned to a property on the underlying unproxied plain object/array, which can happen when writing code like this: `myStore.foo = [myStore.obj]` for example, which should instead be written as `myStore.foo = [store.unwrap ( myStore.obj )]`. If you stumbled on this and you don't want to change your code refer to [this `deepUnwrap` function](https://github.com/vobyjs/soby/issues/8#issuecomment-1755509198).
 
 Interface:
 
@@ -585,19 +573,20 @@ store.reconcile = function reconcile <T extends StoreReconcileableTarget> ( prev
 store.untrack = function untrack <T> ( value: T ): T;
 store.unwrap = function unwrap <T> ( value: T ): T;
 ```
+The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGERER.debug = true`.
 
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Make a reactive plain object
 
 const obj = $.store ({ foo: { deep: 123 } });
 
-$.effect ( () => {
+$.effect ( (stack) => {
 
-  obj.foo.deep; // Subscribe to "foo" and "foo.deep"
+  console.log ( o (), stack );
 
 });
 
@@ -687,7 +676,7 @@ function tick (): void;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 $.effect ( () => {
   console.log ( 'effect called' );
@@ -716,7 +705,7 @@ function untrack <T> ( value: T ): T;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Untracking a single Observable
 
@@ -762,7 +751,7 @@ function with (): (<T> ( fn: () => T ): T);
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Reading some values from the context as if the code was executing inside a different computation
 
@@ -816,7 +805,7 @@ function if <T, F> ( when: (() => boolean) | boolean, valueTrue: T, valueFalse?:
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Toggling an if
 
@@ -853,7 +842,7 @@ function for <T, R, F> ( values: (() => readonly T[]) | readonly T[] | undefined
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Map over an array of values
 
@@ -889,7 +878,7 @@ function suspense <T> ( suspended: FunctionMaybe<unknown>, fn: () => T ): T;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create a suspendable branch of computation
 
@@ -934,7 +923,7 @@ function switch <T, R, F> ( when: (() => T) | T, values: SwitchValue<T, R>[], fa
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Switching cases
 
@@ -966,7 +955,7 @@ function ternary <T, F> ( when: (() => boolean) | boolean, valueTrue: T, valueFa
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Toggling an ternary
 
@@ -996,7 +985,7 @@ function tryCatch <T, F> ( value: T, catchFn: ({ error, reset }: { error: Error,
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create an tryCatch boundary
 
@@ -1040,11 +1029,12 @@ Interface:
 ```ts
 function boolean ( value: FunctionMaybe<unknown> ): FunctionMaybe<boolean>;
 ```
+The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGERER.debug = true`.
 
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Implementing a custom if function
 
@@ -1074,7 +1064,7 @@ function disposed (): ObservableReadonly<boolean>;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Create an effect whose function knows when it's disposed
 
@@ -1123,7 +1113,7 @@ function get <T> ( value: T, getFunction: false ): (T extends ObservableReadonly
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Getting the value out of an Observable
 
@@ -1158,7 +1148,7 @@ function readonly <T> ( observable: Observable<T> | ObservableReadonly<T> ): Obs
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Making a read-only Observable
 
@@ -1197,7 +1187,7 @@ const resolve = <T> ( value: T ): T extends Resolvable ? T : never;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Resolve a plain value
 
@@ -1249,7 +1239,7 @@ function selector <T> ( source: () => T ): SelectorFunction<T>;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Making a selector
 
@@ -1297,7 +1287,7 @@ function suspended (): ObservableReadonly<boolean>;
 Usage:
 
 ```ts
-import {$} from 'oby';
+import {$} from 'soby';
 
 // Scheduling an interval that won't be executed while the nearest suspense boundary is suspended
 
@@ -1334,7 +1324,7 @@ function untracked <T> ( value: T ): () => T;
 Usage:
 
 ```ts
-import $ from 'oby';
+import $ from 'soby';
 
 // Creating an untracked function
 
@@ -1434,7 +1424,7 @@ This type describes a read-only Observable, like what you'd get from `$.memo` or
 Interface:
 
 ```ts
-type ObservableReadonly<T> = {
+type ObservableReadonly<T极 = {
   (): T,
   readonly [ObservableSymbol]: true
 };

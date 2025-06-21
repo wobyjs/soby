@@ -13,7 +13,7 @@ import ObservableClass from '~/objects/observable'
 import { SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_STORE_UNTRACKED } from '~/symbols'
 import { castArray, is, isArray, isFunction, isObject, noop, nope } from '~/utils'
 import type { IObservable, CallbackFunction, DisposeFunction, EqualsFunction, Observable, ObservableOptions, StoreOptions, ArrayMaybe, LazySet } from '~/types'
-import { callStack } from './debugger'
+import { callStack, Stack } from './debugger'
 
 /* TYPES */
 
@@ -110,7 +110,7 @@ const StoreListenersRegular = {
   listeners: new Set<CallbackFunction>(),
   nodes: new Set<StoreNode>(),
   /* API */
-  prepare: (stack?: Error): CallbackFunction => {
+  prepare: (stack?: Stack): CallbackFunction => {
     const { listeners, nodes } = StoreListenersRegular
     const traversed = new Set<StoreNode>()
     const traverse = (node: StoreNode): void => {
@@ -128,7 +128,7 @@ const StoreListenersRegular = {
       })
     }
   },
-  register: (node: StoreNode, stack?: Error): void => {
+  register: (node: StoreNode, stack?: Stack): void => {
     StoreListenersRegular.nodes.add(node)
     StoreScheduler.schedule(stack)
   },
@@ -154,13 +154,13 @@ const StoreListenersRoots = {
       })
     }
   },
-  register: (store: StoreNode, root: unknown, stack?: Error): void => {
+  register: (store: StoreNode, root: unknown, stack?: Stack): void => {
     const roots = StoreListenersRoots.nodes.get(store) || new Set()
     roots.add(root)
     StoreListenersRoots.nodes.set(store, roots)
     StoreScheduler.schedule(stack)
   },
-  registerWith: (current: StoreNode | undefined, parent: StoreNode, key: StoreKey, stack?: Error): void => {
+  registerWith: (current: StoreNode | undefined, parent: StoreNode, key: StoreKey, stack?: Stack): void => {
     if (!parent.parents) {
       const root = current?.store || untrack(() => parent.store[key])
       StoreListenersRoots.register(parent, root, stack)
@@ -188,14 +188,14 @@ const StoreScheduler = {
   /* VARIABLES */
   active: false,
   /* API */
-  flush: (stack?: Error): void => {
+  flush: (stack?: Stack): void => {
     const flushRegular = StoreListenersRegular.prepare(stack)
     const flushRoots = StoreListenersRoots.prepare()
     StoreScheduler.reset()
     flushRegular(stack)
     flushRoots(stack)
   },
-  flushIfNotBatching: (stack?: Error): void => {
+  flushIfNotBatching: (stack?: Stack): void => {
     if (isBatching()) {
       if (BATCH) {
         BATCH.finally(() => StoreScheduler.flushIfNotBatching(stack))
@@ -211,7 +211,7 @@ const StoreScheduler = {
     StoreListenersRegular.reset()
     StoreListenersRoots.reset()
   },
-  schedule: (stack?: Error): void => {
+  schedule: (stack?: Stack): void => {
     if (StoreScheduler.active) return
     StoreScheduler.active = true
     queueMicrotask(() => StoreScheduler.flushIfNotBatching(stack))
@@ -231,7 +231,7 @@ const STORE_TRAPS = {
   /* API */
 
   get: (target: StoreTarget, key: StoreKey): unknown => {
-    const stack = callStack()
+    const stack = callStack('store.get')
 
     if (SPECIAL_SYMBOLS.has(key)) {
 
@@ -247,7 +247,8 @@ const STORE_TRAPS = {
 
           node.keys ||= getNodeKeys(node)
           node.keys.listen()
-          node.keys.observable.get(stack)
+          node.keys.observable.stack = stack
+          node.keys.observable.get()
 
         }
 
@@ -263,7 +264,8 @@ const STORE_TRAPS = {
 
           node.values ||= getNodeValues(node)
           node.values.listen()
-          node.values.observable.get(stack)
+          node.values.observable.stack = stack
+          node.values.observable.get()
 
         }
 
@@ -324,7 +326,8 @@ const STORE_TRAPS = {
 
       property.listen()
       property.observable ||= getNodeObservable(node, value, options)
-      property.observable.get(stack)
+      property.observable.stack = stack
+      property.observable.get()
 
     }
 
@@ -346,7 +349,7 @@ const STORE_TRAPS = {
 
   },
 
-  set: (target: StoreTarget, key: StoreKey, value: unknown, stack?: Error): boolean => {
+  set: (target: StoreTarget, key: StoreKey, value: unknown, stack?: Stack): boolean => {
 
     value = getTarget(value)
 
@@ -373,14 +376,14 @@ const STORE_TRAPS = {
       const lengthNext = targetIsArray && target['length']
 
       if (targetIsArray && key !== 'length' && lengthPrev !== lengthNext) { // Inferring updating the length property, since it happens implicitly
-        node.properties?.get('length')?.observable?.set(lengthNext, stack)
+        node.properties?.get('length')?.observable?.set(lengthNext)
       }
 
-      node.values?.observable.set(0, stack)
+      node.values?.observable.set(0)
 
       if (!hadProperty) {
-        node.keys?.observable.set(0, stack)
-        node.has?.get(key)?.observable.set(true, stack)
+        node.keys?.observable.set(0)
+        node.has?.get(key)?.observable.set(true)
       }
 
       const property = node.properties?.get(key)
@@ -390,7 +393,7 @@ const STORE_TRAPS = {
       }
 
       if (property) {
-        property.observable?.set(value, stack)
+        property.observable?.set(value)
         property.node = isProxiable(value) ? NODES.get(value) || getNode(value, key, node) : undefined
       }
 
@@ -438,9 +441,9 @@ const STORE_TRAPS = {
 
     node.getters?.delete(key)
     node.setters?.delete(key)
-    node.keys?.observable.set(0, stack)
-    node.values?.observable.set(0, stack)
-    node.has?.get(key)?.observable.set(false, stack)
+    node.keys?.observable.set(0)
+    node.values?.observable.set(0)
+    node.has?.get(key)?.observable.set(false)
 
     const property = node.properties?.get(key)
 
@@ -453,7 +456,7 @@ const STORE_TRAPS = {
     }
 
     if (property) {
-      property.observable?.set(undefined, stack)
+      property.observable?.set(undefined)
       property.node = undefined
     }
 
@@ -500,10 +503,10 @@ const STORE_TRAPS = {
     }
 
     if (hadProperty !== !!descriptor.enumerable) {
-      node.keys?.observable.set(0, stack)
+      node.keys?.observable.set(0)
     }
 
-    node.has?.get(key)?.observable.set(true, stack)
+    node.has?.get(key)?.observable.set(true)
 
     const property = node.properties?.get(key)
 
@@ -517,11 +520,11 @@ const STORE_TRAPS = {
 
     if (property) {
       if ('get' in descriptor) {
-        property.observable?.set(descriptor.get, stack)
+        property.observable?.set(descriptor.get)
         property.node = undefined
       } else {
         const value = descriptor.value
-        property.observable?.set(value, stack)
+        property.observable?.set(value)
         property.node = isProxiable(value) ? NODES.get(value) || getNode(value, key, node) : undefined
       }
     }
@@ -550,7 +553,6 @@ const STORE_TRAPS = {
 
     const value = (key in target)
 
-    const stack = callStack()
     if (isListenable()) {
 
       const node = getNodeExisting(target)
@@ -560,7 +562,8 @@ const STORE_TRAPS = {
       const has = node.has.get(key) || node.has.insert(key, getNodeHas(node, key, value))
 
       has.listen()
-      has.observable.get(stack)
+      has.observable.stack = callStack('store.has')
+      has.observable.get()
 
     }
 
@@ -578,8 +581,8 @@ const STORE_TRAPS = {
 
       node.keys ||= getNodeKeys(node)
       node.keys.listen()
-      const stack = callStack()
-      node.keys.observable.get(stack)
+      node.keys.observable.stack = callStack('store.ownKeys')
+      node.keys.observable.get()
 
     }
 
@@ -872,7 +875,7 @@ store.on = (target: ArrayMaybe<StoreListenableTarget>, listener: CallbackFunctio
 
   /* OFF */
 
-  return (stack?: Error): void => {
+  return (stack?: Stack): void => {
 
     StoreListenersRegular.active -= 1
 

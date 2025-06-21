@@ -3,6 +3,7 @@
 
 import { BATCH } from '~/context'
 import type { IEffect } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -12,14 +13,14 @@ class Scheduler {
 
   /* VARIABLES */
 
-  waiting: [IEffect, Error?][] = [];
+  waiting: [IEffect, Stack?][] = [];
 
   locked: boolean = false;
   queued: boolean = false;
 
   /* QUEUING API */
 
-  flush = (stack?: Error): void => {
+  flush = (stack?: Stack): void => {
 
     if (this.locked) return
 
@@ -53,7 +54,7 @@ class Scheduler {
 
   }
 
-  queue = (stack?: Error): void => {
+  queue = (stack?: Stack): void => {
 
     if (this.queued) return
 
@@ -63,7 +64,7 @@ class Scheduler {
 
   }
 
-  resolve = (stack?: Error): void => {
+  resolve = (stack?: Stack): void => {
 
     queueMicrotask(() => {
 
@@ -89,7 +90,7 @@ class Scheduler {
 
   /* SCHEDULING API */
 
-  schedule = (effect: IEffect, stack?: Error): void => {
+  schedule = (effect: IEffect, stack?: Stack): void => {
 
     this.waiting.push([effect, stack])
 

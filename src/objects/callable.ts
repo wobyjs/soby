@@ -4,6 +4,7 @@
 import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE } from '~/symbols'
 import { isFunction } from '~/utils'
 import type { IObservable, UpdateFunction, Observable, ObservableReadonly } from '~/types'
+import type { Stack } from '~/methods/debugger'
 
 /* MAIN - FUNCTIONS */
 
@@ -45,7 +46,7 @@ const frozen = <T>(value: T): ObservableReadonly<T> => {
   return fn
 }
 
-const readable = <T>(value: IObservable<T>, stack?: Error): ObservableReadonly<T> => {
+const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T> => {
   //TODO: Make a frozen one instead if disposed
   value.stack = stack
   const fn = readableFunction.bind(value as any) as ObservableReadonly<T> //TSC
@@ -54,7 +55,7 @@ const readable = <T>(value: IObservable<T>, stack?: Error): ObservableReadonly<T
   return fn
 }
 
-const writable = <T>(value: IObservable<T>, stack?: Error): Observable<T> => {
+const writable = <T>(value: IObservable<T>, stack?: Stack): Observable<T> => {
   value.stack = stack
   const fn = writableFunction.bind(value as any) as ObservableReadonly<T> //TSC
   fn[SYMBOL_OBSERVABLE] = true

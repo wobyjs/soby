@@ -150,7 +150,7 @@ class CacheKeyed<T, R> {
         reuseCount += 1
 
         cached.bool = bool
-        cached.index?.set(i, stack)
+        cached.index?.set(i)
 
         results[i] = cached.result! //TSC
 

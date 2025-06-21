@@ -2,6 +2,7 @@
 /* IMPORT */
 
 import type { IObservable, IObserver } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -126,7 +127,7 @@ class ObservablesArray {
 
   }
 
-  update(stack?: Error): void {
+  update(stack?: Stack): void {
 
     const { observables } = this
 
@@ -201,7 +202,7 @@ class ObservablesSet {
 
   }
 
-  update(stack?: Error): void {
+  update(stack?: Stack): void {
 
     for (const observable of this.observables) {
 

@@ -6,6 +6,7 @@ import { lazySetAdd, lazySetDelete } from '~/lazy'
 import Owner from '~/objects/owner'
 import { SYMBOL_SUSPENSE } from '~/symbols'
 import type { IOwner, ISuspense, WrappedDisposableFunction, Contexts, IContext, IObserver, IRoot, ISuperRoot } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -53,10 +54,10 @@ class Root extends Owner {
 
   }
 
-  wrap<T>(fn: WrappedDisposableFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver, stack?: Error): T {
+  wrap<T>(fn: WrappedDisposableFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver, stack?: Stack): T {
 
     const dispose = () => this.dispose(true)
-    const fnWithDispose = () => fn(stack as any, dispose)
+    const fnWithDispose = () => fn(stack, dispose)
 
     return super.wrap(fnWithDispose, this, undefined, stack as any)
 

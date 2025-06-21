@@ -2,10 +2,10 @@
 /* IMPORT */
 
 import { DIRTY_MAYBE_YES, UNAVAILABLE, UNINITIALIZED } from '~/constants'
-import { callStack } from '~/methods/debugger'
 import Observable from '~/objects/observable'
 import Observer from '~/objects/observer'
 import type { IObservable, MemoFunction, MemoOptions } from '~/types'
+import { callStack, Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -26,7 +26,7 @@ class Memo<T = unknown> extends Observer {
     this.fn = fn
     this.observable = new Observable<T>(UNINITIALIZED, options, this)
 
-    const { stack } = options ?? { stack: callStack('Stack should be initialized in options') }
+    const { stack } = options ?? { stack: callStack('Memo init') }
 
     if (options?.sync === true) {
 
@@ -40,7 +40,7 @@ class Memo<T = unknown> extends Observer {
 
   /* API */
 
-  run(stack?: Error): void {
+  run(stack?: Stack): void {
 
     const result = super.refresh(this.fn, stack)
 
@@ -52,13 +52,13 @@ class Memo<T = unknown> extends Observer {
 
     if (result !== UNAVAILABLE) {
 
-      this.observable.set(result, stack)
+      this.observable.set(result)
 
     }
 
   }
 
-  stale(status: number, stack?: Error): void {
+  stale(status: number, stack?: Stack): void {
 
     const statusPrev = this.status
 

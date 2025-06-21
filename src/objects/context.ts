@@ -5,6 +5,7 @@ import { OWNER } from '~/context'
 import { lazyArrayPush } from '~/lazy'
 import Owner from '~/objects/owner'
 import type { IOwner, ContextFunction, Contexts, IContext, IObserver, IRoot, ISuperRoot, ISuspense } from '~/types'
+import { Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -29,7 +30,7 @@ class Context extends Owner {
 
   /* API */
 
-  wrap<T>(fn: ContextFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Error): T {
+  wrap<T>(fn: ContextFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Stack): T {
 
     return super.wrap(fn, this, undefined, stack)
 

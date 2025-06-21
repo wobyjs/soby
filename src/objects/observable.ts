@@ -6,7 +6,7 @@ import { OBSERVER } from '~/context'
 import Scheduler from '~/objects/scheduler.sync'
 import { is, nope } from '~/utils'
 import type { IObserver, EqualsFunction, UpdateFunction, ObservableOptions } from '~/types'
-import { callStack } from '~/methods/debugger'
+import { callStack, Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -19,7 +19,7 @@ class Observable<T = unknown> {
   equals?: EqualsFunction<T>
   observers: Set<IObserver> = new Set();
   //@ts-ignore
-  stack?: Error
+  stack?: Stack
 
   /* CONSTRUCTOR */
 
@@ -43,11 +43,11 @@ class Observable<T = unknown> {
 
   /* API */
 
-  get(stack?: Error): T {
+  get(): T {
 
     if (!this.parent?.disposed) {
 
-      this.parent?.update(stack)
+      this.parent?.update(this.stack)
 
       OBSERVER?.observables.link(this)
 
@@ -57,7 +57,7 @@ class Observable<T = unknown> {
 
   }
 
-  set(value: T, stack?: Error): T {
+  set(value: T): T {
 
     const equals = this.equals || is
     const fresh = (this.value === UNINITIALIZED) || !equals(value, this.value)
@@ -80,7 +80,7 @@ class Observable<T = unknown> {
 
   }
 
-  stale(status: number, stack?: Error): void {
+  stale(status: number, stack?: Stack): void {
 
     for (const observer of this.observers) {
 
@@ -104,11 +104,11 @@ class Observable<T = unknown> {
 
   }
 
-  update(fn: UpdateFunction<T>, stack?: Error): T {
+  update(fn: UpdateFunction<T>, stack?: Stack): T {
 
     const value = fn(this.value)
 
-    return this.set(value, stack)
+    return this.set(value)
 
   }
 

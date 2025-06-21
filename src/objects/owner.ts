@@ -7,7 +7,7 @@ import { lazyArrayEachRight } from '~/lazy'
 import { castError } from '~/utils'
 import type { SYMBOL_SUSPENSE } from '~/symbols'
 import type { IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue } from '~/types'
-import { callStack } from '~/methods/debugger'
+import { callStack, Stack } from '~/methods/debugger'
 
 /* HELPERS */
 
@@ -81,7 +81,7 @@ class Owner {
 
   }
 
-  wrap<T>(fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Error): T {
+  wrap<T>(fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Stack): T {
 
     const ownerPrev = OWNER
     const observerPrev = OBSERVER

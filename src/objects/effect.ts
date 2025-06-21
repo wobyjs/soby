@@ -7,7 +7,7 @@ import Scheduler from '~/objects/scheduler.async'
 import { SYMBOL_SUSPENSE } from '~/symbols'
 import { isFunction } from '~/utils'
 import type { ISuspense, EffectFunction, EffectOptions } from '~/types'
-import { callStack } from '~/methods/debugger'
+import { callStack, Stack } from '~/methods/debugger'
 
 /* MAIN */
 
@@ -46,7 +46,7 @@ class Effect extends Observer {
 
     }
 
-    const { stack } = options ?? { stack: callStack('Stack should be initialized in options') }
+    const { stack } = options ?? { stack: callStack('Effect init') }
 
     if (options?.sync === 'init') {
 
@@ -64,7 +64,7 @@ class Effect extends Observer {
 
   /* API */
 
-  run(stack?: Error): void {
+  run(stack?: Stack): void {
 
     const result = super.refresh(this.fn, stack)
 
@@ -76,7 +76,7 @@ class Effect extends Observer {
 
   }
 
-  schedule(stack?: Error): void {
+  schedule(stack?: Stack): void {
 
     if (this.suspense?.suspended) return
 
@@ -92,7 +92,7 @@ class Effect extends Observer {
 
   }
 
-  stale(status: number, stack?: Error): void {
+  stale(status: number, stack?: Stack): void {
 
     const statusPrev = this.status
 
@@ -108,7 +108,7 @@ class Effect extends Observer {
 
   }
 
-  update(stack?: Error): void {
+  update(stack?: Stack): void {
 
     if (this.suspense?.suspended) return
 
