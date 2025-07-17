@@ -1,4 +1,4 @@
-export const DEBUGGER = { debug: false }
+export const DEBUGGER = { debug: false, test: false }
 
 export class Stack extends Error {
     constructor(message: string) {
