@@ -25,12 +25,12 @@ importers:
         version: 4.0.2
       typescript:
         specifier: ^5.8.3
-        version: 5.8.3
+        version: 5.9.2
 
 packages:
 
-  ansi-purge@1.0.1:
-    resolution: {integrity: sha512-5NNMT7rljQ24DKHnIYG1qFXs8eUv5mZcT6kOPf5NopQUzpURBh/T4tbQw3TX//q3Zpw3JwVvsVHHsRKJesQHZQ==}
+  ansi-purge@1.1.0:
+    resolution: {integrity: sha512-sa1KWMANfZurQkYemaVNNJh8gRF0iUJvcVNxvjPlYM9pPPTB0v+VKH/mFRz4s6gXA8plimQXorJSqJgutxUs8g==}
 
   are-deeply-equal@1.1.2:
     resolution: {integrity: sha512-GatAcPLQ6zU6kE44J2K8pRY8sQUzUqmJRvzRfeZbzV3zBI69SpPzx6/oN1Jb8EUxamKfx+fyDOdipxkgkrcCBw==}
@@ -47,11 +47,11 @@ packages:
   dettle@1.0.5:
     resolution: {integrity: sha512-ZVyjhAJ7sCe1PNXEGveObOH9AC8QvMga3HJIghHawtG7mE4K5pW9nz/vDGAr/U7a3LWgdOzEE7ac9MURnyfaTA==}
 
-  fast-string-truncated-width@1.2.1:
-    resolution: {integrity: sha512-Q9acT/+Uu3GwGj+5w/zsGuQjh9O1TyywhIwAxHudtWrgF09nHOPrvTLhQevPbttcxjr/SNN7mJmfOw/B1bXgow==}
+  fast-string-truncated-width@3.0.1:
+    resolution: {integrity: sha512-tHCvcq0zdQ0NoTG3LJ1VlepCq7m4eAVMsbNrta9IlYxCPvgyoVJPl0rUbi+jTCkJLRQKfadVKNBuAlaa4nQJIw==}
 
-  fast-string-width@1.1.0:
-    resolution: {integrity: sha512-O3fwIVIH5gKB38QNbdg+3760ZmGz0SZMgvwJbA1b2TGXceKE6A2cOlfogh1iw8lr049zPyd7YADHy+B7U4W9bQ==}
+  fast-string-width@3.0.1:
+    resolution: {integrity: sha512-8R+/9ppmJ+wcdnT21jIi+s2vqMhmRN/5TRmWVSiSeNBV5s26siCStF6R84LSLARPR/MSmE/z2bgBf7PCQxnwMg==}
 
   fava@0.3.5:
     resolution: {integrity: sha512-6LAb6YZB1NbI+GlkrA5WPkqfHstNLy6AUJ/s+HEZaNRCN+JfKuUakkaH2oANY+YWnzOd6ISQUC/OBinP3wZP7A==}
@@ -98,8 +98,8 @@ packages:
   stubborn-fs@1.2.5:
     resolution: {integrity: sha512-H2N9c26eXjzL/S/K+i/RHHcFanE74dptvvjM8iwzwbVcWY/zjBbgRqF3K0DY4+OD+uTTASTBvDoxPDaPN02D7g==}
 
-  tiny-bin@1.11.1:
-    resolution: {integrity: sha512-UFC5EwtmCkFshKOBgXZzNFJsHpZrtbWZ/jQj+pwoIGUUbmenlQGGVDOwVqVOuG1nTxICSd+GLp3b+j7dUKZr2Q==}
+  tiny-bin@1.11.3:
+    resolution: {integrity: sha512-CrBbiKsvJN4bHSDA0cPau4t5KWdGUUAcTXQ8bB14XNqNY+68UZF4Zo7WRVdHLq0j0GYZjIRbNDg+zJbJXDEXeg==}
 
   tiny-colors@2.2.2:
     resolution: {integrity: sha512-Elmv7JL+dX0c78caKEelH1nHHBskHzJkaqBRgVvQuxsvVA/Z9Fa2R3ZZtfmkkajcd18e96RLMwJvtFqC8jsZWA==}
@@ -120,8 +120,8 @@ packages:
     resolution: {integrity: sha512-vp/uRp3qKS8NJuZfk2yCzpiLsxKCd0cW5FrS0JrCSrw0FSe/bNXgH1eVMHagTaWqWGjj6zpMQld37mWNW0l2qQ==}
     hasBin: true
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -136,7 +136,7 @@ packages:
 
 snapshots:
 
-  ansi-purge@1.0.1: {}
+  ansi-purge@1.1.0: {}
 
   are-deeply-equal@1.1.2: {}
 
@@ -153,11 +153,11 @@ snapshots:
 
   dettle@1.0.5: {}
 
-  fast-string-truncated-width@1.2.1: {}
+  fast-string-truncated-width@3.0.1: {}
 
-  fast-string-width@1.1.0:
+  fast-string-width@3.0.1:
     dependencies:
-      fast-string-truncated-width: 1.2.1
+      fast-string-truncated-width: 3.0.1
 
   fava@0.3.5:
     dependencies:
@@ -208,17 +208,17 @@ snapshots:
 
   specialist@1.4.5:
     dependencies:
-      tiny-bin: 1.11.1
+      tiny-bin: 1.11.3
       tiny-colors: 2.2.2
       tiny-parse-argv: 2.8.2
       tiny-updater: 3.5.3
 
   stubborn-fs@1.2.5: {}
 
-  tiny-bin@1.11.1:
+  tiny-bin@1.11.3:
     dependencies:
-      ansi-purge: 1.0.1
-      fast-string-width: 1.1.0
+      ansi-purge: 1.1.0
+      fast-string-width: 3.0.1
       get-current-package: 1.0.1
       tiny-colors: 2.2.2
       tiny-levenshtein: 1.1.0
@@ -249,7 +249,7 @@ snapshots:
       tiny-readdir: 2.7.4
       watcher: 2.3.1
 
-  typescript@5.8.3: {}
+  typescript@5.9.2: {}
 
   watcher@2.3.1:
     dependencies:
