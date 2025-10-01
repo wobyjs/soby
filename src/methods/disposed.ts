@@ -1,4 +1,3 @@
-
 /* IMPORT */
 
 import cleanup from '~/methods/cleanup'
@@ -14,6 +13,8 @@ const disposed = (stack?: Stack): ObservableReadonly<boolean> => {
   const observable = new Observable(false)
   const toggle = () => observable.set(true)
 
+  // Register the cleanup in the current context
+  // This ensures that when the context is disposed/re-run, the observable is updated
   cleanup(toggle)
 
   return readable(observable)

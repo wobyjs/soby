@@ -10,6 +10,10 @@ import { callStack } from './debugger'
 
 function observable<T>(): Observable<T | undefined>
 function observable<T>(value: undefined, options?: ObservableOptions<T | undefined>): Observable<T | undefined>
+// Overloads for common literal types to improve type inference
+function observable<T extends boolean>(value: boolean, options?: ObservableOptions<T>): Observable<T>
+function observable<T extends number>(value: number, options?: ObservableOptions<T>): Observable<T>
+function observable<T extends string>(value: string, options?: ObservableOptions<T>): Observable<T>
 function observable<T>(value: T, options?: ObservableOptions<T>): Observable<T>
 function observable<T>(value?: T, options?: ObservableOptions<T | undefined>) {
   const stack = callStack()

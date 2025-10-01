@@ -3,6 +3,7 @@
 ### 🚀 Features
 
 - Add runtime type checking to Observables and fix selector equality
+- Add runtime type checking and fix selector equality
 ## [15.1.3] - 2025-06-11
 
 ### 💼 Other

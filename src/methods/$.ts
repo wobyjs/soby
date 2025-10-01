@@ -39,6 +39,10 @@ import { callStack } from './debugger'
 
 function $<T>(): Observable<T | undefined>
 function $<T>(value: undefined, options?: ObservableOptions<T | undefined>): Observable<T | undefined>
+// Overloads for common literal types to improve type inference
+function $<T extends boolean>(value: boolean, options?: ObservableOptions<T>): Observable<T>
+function $<T extends number>(value: number, options?: ObservableOptions<T>): Observable<T>
+function $<T extends string>(value: string, options?: ObservableOptions<T>): Observable<T>
 function $<T>(value: T, options?: ObservableOptions<T>): Observable<T>
 function $<T>(value?: T, options?: ObservableOptions<T | undefined>) {
   const stack = callStack()
