@@ -1,6 +1,6 @@
 {
   "name": "soby",
-  "repository": "github:wongchichong/soby",
+  "repository": "github:wobyjs/soby",
   "description": "A rich Observable/Signal implementation, the brilliant primitive you need to build a powerful reactive system.",
   "version": "15.1.12",
   "type": "module",
@@ -9,7 +9,7 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "git": "git add . && git commit -m \"Bump version\" && git push",
+    "git": "git-cliff > CHANGELOG.md && git-commit-m",
     "bump": "pnpm version patch",
     "npmjs": "pnpm publish",
     "release": "run-s -c git bump npmjs",

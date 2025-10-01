@@ -14,7 +14,7 @@ const _with = (): (<T> (fn: WithFunction<T>, stack?: Stack) => T) => {
 
   return <T>(fn: WithFunction<T>, stack?: Stack): T => {
 
-    return owner.wrap(() => fn(stack), owner, observer as any, stack)
+    return owner.wrap(() => fn(), owner, observer as any, stack)
 
   }
 

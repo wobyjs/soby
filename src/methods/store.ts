@@ -679,7 +679,7 @@ const getNodeHas = (node: StoreNode, key: StoreKey, value: boolean): StoreHas =>
 
 }
 
-const getNodeObservable = <T>(node: StoreNode, value: T, options?: ObservableOptions): IObservable<T> => {
+const getNodeObservable = <T>(node: StoreNode, value: T, options?: ObservableOptions<T>): IObservable<T> => {
 
   return new ObservableClass(value, options)
 

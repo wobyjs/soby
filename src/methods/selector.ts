@@ -11,6 +11,13 @@ import warmup from '~/methods/warmup'
 import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { is } from '~/utils'
+
+/* HELPERS */
+const isEqualForSelector = (a: unknown, b: unknown): boolean => {
+  // Treat 0 and -0 as equal for selector purposes
+  if ((a === 0 || is(a, -0)) && (b === 0 || is(b, -0))) return true
+  return is(a, b)
+}
 import type { SelectorFunction, ObservableReadonly } from '~/types'
 import { callStack, Stack } from './debugger'
 
@@ -49,7 +56,7 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     return (value: T): ObservableReadonly<boolean> => {
 
-      return (value === sourceValue) ? OBSERVABLE_TRUE : OBSERVABLE_FALSE
+      return (isEqualForSelector(value, sourceValue)) ? OBSERVABLE_TRUE : OBSERVABLE_FALSE
 
     }
 
@@ -66,7 +73,7 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
     const valuePrev = selectedValue
     const valueNext = source()
 
-    if (is(valuePrev, valueNext)) return
+    if (isEqualForSelector(valuePrev, valueNext)) return
 
     selectedValue = valueNext
 
@@ -99,7 +106,8 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     } else {
 
-      selected = new SelectedObservable(value === selectedValue)
+      const isSelected = isEqualForSelector(value, selectedValue)
+      selected = new SelectedObservable(isSelected)
       selected.selecteds = selecteds
       selected.source = value
 

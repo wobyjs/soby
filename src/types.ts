@@ -116,7 +116,8 @@ type ObservableReadonlyLike<T = unknown> = {
 }
 
 type ObservableOptions<T = unknown> = {
-  equals?: EqualsFunction<T> | false
+  equals?: EqualsFunction<T> | false,
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
 }
 
 declare const ObservableSymbol: unique symbol

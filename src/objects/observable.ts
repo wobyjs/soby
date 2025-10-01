@@ -20,12 +20,14 @@ class Observable<T = unknown> {
   observers: Set<IObserver> = new Set();
   //@ts-ignore
   stack?: Stack
+  options?: ObservableOptions<T>
 
   /* CONSTRUCTOR */
 
   constructor(value: T, options?: ObservableOptions<T>, parent?: IObserver) {
 
     this.value = value
+    this.options = options
 
     if (parent) {
 
@@ -58,6 +60,56 @@ class Observable<T = unknown> {
   }
 
   set(value: T): T {
+
+    // Type checking based on options.type
+    if (this.options?.type !== undefined) {
+      const expectedType = this.options.type
+
+      // Handle string literal types
+      if (typeof expectedType === 'string') {
+        const actualType = typeof value
+        if (actualType !== expectedType &&
+          !(expectedType === 'object' && value === null)) { // typeof null is 'object'
+          throw new TypeError(`Expected value of type '${expectedType}', but received '${actualType}'`)
+        }
+      }
+      // Handle constructor types
+      else if (typeof expectedType === 'function') {
+        // Use a more type-safe approach for checking built-in constructors
+        try {
+          // Check if it's one of the built-in primitive types by name
+          const constructorName = (expectedType as any).name
+
+          if (constructorName === 'String' && typeof value !== 'string') {
+            throw new TypeError(`Expected value of type 'string', but received '${typeof value}'`)
+          } else if (constructorName === 'Number' && typeof value !== 'number') {
+            throw new TypeError(`Expected value of type 'number', but received '${typeof value}'`)
+          } else if (constructorName === 'Boolean' && typeof value !== 'boolean') {
+            throw new TypeError(`Expected value of type 'boolean', but received '${typeof value}'`)
+          } else if (constructorName === 'Function' && typeof value !== 'function') {
+            throw new TypeError(`Expected value of type 'function', but received '${typeof value}'`)
+          } else if (constructorName === 'Object' && (typeof value !== 'object' || value === null)) {
+            throw new TypeError(`Expected value of type 'object', but received '${typeof value}'`)
+          } else if (constructorName === 'Symbol' && typeof value !== 'symbol') {
+            throw new TypeError(`Expected value of type 'symbol', but received '${typeof value}'`)
+          } else if (constructorName === 'BigInt' && typeof value !== 'bigint') {
+            throw new TypeError(`Expected value of type 'bigint', but received '${typeof value}'`)
+          } else if (constructorName && constructorName !== 'String' && constructorName !== 'Number' &&
+            constructorName !== 'Boolean' && constructorName !== 'Function' &&
+            constructorName !== 'Object' && constructorName !== 'Symbol' &&
+            constructorName !== 'BigInt') {
+            // This should be a custom constructor
+            if (!(value instanceof expectedType)) {
+              throw new TypeError(`Expected value to be instance of '${constructorName}', but received '${typeof value}'`)
+            }
+          }
+        } catch (e) {
+          // If there's any issue with the type checking, we skip it to avoid runtime errors
+          // This is a safety measure for edge cases
+        }
+      }
+      // Handle generic T type (no additional check needed as TypeScript handles this at compile time)
+    }
 
     const equals = this.equals || is
     const fresh = (this.value === UNINITIALIZED) || !equals(value, this.value)
