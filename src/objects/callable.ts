@@ -55,12 +55,20 @@ const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T
   return fn
 }
 
-const writable = <T>(value: IObservable<T>, stack?: Stack): Observable<T> => {
+/**
+ * Creates a writable observable function with enhanced type information.
+ * The returned function can be used as both a getter and setter for the observable value.
+ * 
+ * @param value - The observable instance to wrap
+ * @param stack - Optional debugging stack trace
+ * @returns A function that acts as both getter and setter with proper type annotations
+ */
+const writable = <T>(value: IObservable<T>, stack?: Stack): Observable<T> & { [SYMBOL_OBSERVABLE]: true, [SYMBOL_OBSERVABLE_WRITABLE]: IObservable<T> } => {
   value.stack = stack
   const fn = writableFunction.bind(value as any) as ObservableReadonly<T> //TSC
   fn[SYMBOL_OBSERVABLE] = true
   fn[SYMBOL_OBSERVABLE_WRITABLE] = value
-  return fn
+  return fn as any
 }
 
 /* EXPORT */

@@ -5,7 +5,7 @@ import { OWNER } from '~/context'
 import { lazySetAdd, lazySetDelete } from '~/lazy'
 import Owner from '~/objects/owner'
 import { SYMBOL_SUSPENSE } from '~/symbols'
-import type { IOwner, ISuspense, WrappedDisposableFunction, Contexts, IContext, IObserver, IRoot, ISuperRoot } from '~/types'
+import type { IOwner, ISuspense, WrappedDisposableFunction, Contexts, IContext, IObserver, IRoot, ISuperRoot, WrappedFunction, DisposeFunction } from '~/types'
 import { Stack } from '~/methods/debugger'
 
 /* MAIN */
@@ -56,10 +56,12 @@ class Root extends Owner {
 
   wrap<T>(fn: WrappedDisposableFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver, stack?: Stack): T {
 
-    const dispose = () => this.dispose(true)
+    const dispose: DisposeFunction = (disposeStack?: Stack) => this.dispose(true)
 
-    // Call fn with the correct parameter order: stack first, then dispose
-    return super.wrap(() => fn(stack, dispose), this, undefined, stack as any)
+    // Create a wrapper that accepts the stack parameter from Owner.wrap and passes both stack and dispose to the original function
+    const wrapper: WrappedFunction<T> = (callStack?: Stack) => fn(callStack, dispose)
+
+    return super.wrap(wrapper, this, undefined, stack as any)
 
   }
 

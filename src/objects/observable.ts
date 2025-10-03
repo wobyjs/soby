@@ -104,8 +104,14 @@ class Observable<T = unknown> {
             }
           }
         } catch (e) {
-          // If there's any issue with the type checking, we skip it to avoid runtime errors
-          // This is a safety measure for edge cases
+          // Only catch non-TypeError exceptions to avoid swallowing intentional type errors
+          if (!(e instanceof TypeError)) {
+            // If there's any issue with the type checking, we skip it to avoid runtime errors
+            // This is a safety measure for edge cases
+          } else {
+            // Re-throw TypeError exceptions as they are intentional
+            throw e
+          }
         }
       }
       // Handle generic T type (no additional check needed as TypeScript handles this at compile time)

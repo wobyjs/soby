@@ -59,7 +59,8 @@ The `$()` function has the following interface:
 
 ```ts
 type ObservableOptions<T> = {
-  equals?: (( value: T, valuePrev: T ) => boolean) | false
+  equals?: (( value: T, valuePrev: T ) => boolean) | false,
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
 };
 
 function $ <T> (): Observable<T | undefined>;
@@ -89,6 +90,16 @@ const o = $( 1, { equals } );
 // Create an Observable with an initial value and a special "false" equality function, which is a shorthand for `() => false`, which causes the Observable to always notify its observers when its setter is called
 
 const oFalse = $( 1, { equals: false } );
+
+// Create an Observable with a type constraint that only accepts string values
+
+const oString = $( 'initial value', { type: 'string' } );
+
+// This would work fine
+oString('new value');
+
+// This would throw a TypeError at runtime
+// oString(123); // TypeError: Expected value of type 'string', but received 'number'
 
 // Getter
 
@@ -554,7 +565,7 @@ You can just use the reactive object like you would with a regular non-reactive 
 - **Note**: Getters and setters that are assigned to symbols, if for whatever reason you have those, won't be reactive.
 - **Note**: A powerful function is provided, `$.store.on`, for listening to any changes happening _inside_ a store. Changes are batched automatically within a microtask for you. If you use this function it's advisable to not have multiple instances of the same object inside a single store, or you may hit some edge cases where a listener doesn't fire because another path where the same object is available, and where it was edited from, hasn't been discovered yet, since discovery is lazy as otherwise it would be expensive.
 - **Note**: A powerful function is provided, `$.store.reconcile`, that basically merges the content of the second argument into the first one, preserving wrapper objects in the first argument as much as possible, which can avoid many unnecessary re-renderings down the line. Currently getters/setters/symbols from the second argument are ignored, as supporting those would make this function significantly slower, and you most probably don't need them anyway if you are using this function.
-- **Note**: The `$.store.unwrap` function unwraps the top-most proxy layer of the store only, which in most situations is equivalent to deeply unwrapping the store, and the fastest way to do it, except in one important edge case: if you are doing something that causes a proxy to be directly assigned to a property on the underlying unproxied plain object/array, which can happen when writing code like this: `myStore.foo = [myStore.obj]` for example, which should instead be written as `myStore.foo = [store.unwrap ( myStore.obj )]`. If you stumbled on this and you don't want to change your code refer to [this `deepUnwrap` function](https://github.com/vobyjs/soby/issues/8#issuecomment-1755509198).
+- **Note**: The `$.store.unwrap` function unwraps the top-most proxy layer of the store only, which in most situations is equivalent to deeply unwrapping the store, and the fastest way to do it, except in one important edge case: if you are doing something that causes a proxy to be directly assigned to a property on the underlying unproxied plain object/array, which can happen when writing code like this: `myStore.foo = [myStore.obj]` for example, which should instead be written as `myStore.foo = [store.unwrap ( myStore.obj )]`. If you stumbled on this and you don't want to change your code refer to [this `deepUnwrap` function](https://github.com/wobyjs/soby/issues/8#issuecomment-1755509198).
 
 Interface:
 
@@ -1358,7 +1369,7 @@ Interface:
 ```ts
 type EffectOptions = {
   suspense?: boolean,
-  sync?: boolean | 'init'
+  sync?: boolean
 };
 ```
 
@@ -1424,7 +1435,7 @@ This type describes a read-only Observable, like what you'd get from `$.memo` or
 Interface:
 
 ```ts
-type ObservableReadonly<T极 = {
+type ObservableReadonly<T> = {
   (): T,
   readonly [ObservableSymbol]: true
 };
@@ -1450,8 +1461,30 @@ Interface:
 
 ```ts
 type ObservableOptions<T> = {
-  equals?: (( value: T, valuePrev: T ) => boolean) | false
+  equals?: (( value: T, valuePrev: T ) => boolean) | false,
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
 };
+```
+
+The `type` option provides runtime type checking for observables. When specified, any value assigned to the observable will be validated against this type, and a `TypeError` will be thrown if the types don't match.
+
+The type option supports:
+- Primitive type strings: `'string'`, `'number'`, `'boolean'`, `'function'`, `'object'`, `'symbol'`, `'undefined'`, `'bigint'`
+- Constructor functions (like `String`, `Number`, `Boolean`, etc.)
+- Custom constructor types
+- Generic type `T`
+
+Example:
+
+```ts
+// Create an observable that only accepts number values
+const numberObservable = $( 0, { type: 'number' } );
+
+// This would work fine
+numberObservable( 123 );
+
+// This would throw a TypeError at runtime
+// numberObservable('123'); // TypeError: Expected value of type 'number', but received 'string'
 ```
 
 #### `StoreOptions`
