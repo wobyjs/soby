@@ -12,7 +12,7 @@
     "git": "git-cliff > CHANGELOG.md && git-commit-m",
     "bump": "pnpm version patch",
     "npmjs": "pnpm publish",
-    "commit": "pnpm bump && pnpm push",
+    "commit": "pnpm bump && git push",
     "release": "run-s -c git bump npmjs",
     "all": "scex -sb compile compile:mangle test cellx cleanup context creation kairo if memory read store store:creation updates",
     "bench": "node tasks/bench.js",
