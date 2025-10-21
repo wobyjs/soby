@@ -1,3 +1,8 @@
+## [unreleased]
+
+### 🚀 Features
+
+- *(observable)* Automatic resolution, HTML conversion, and improved type checking
 ## [15.1.13] - 2025-10-03
 
 ### 🚀 Features
