@@ -68,12 +68,19 @@ class Observable<T = unknown> {
       // Handle string literal types
       if (typeof expectedType === 'string') {
         const actualType = typeof value
-        if (actualType !== expectedType &&
-          !(expectedType === 'object' && value === null)) { // typeof null is 'object'
+        // Special handling for null which has typeof 'object'
+        if (expectedType === 'object' && value === null) {
+          // This is valid
+        }
+        // Special handling for undefined values
+        else if (actualType === 'undefined') {
+          // This is valid
+        }
+        else if (actualType !== expectedType) {
           throw new TypeError(`Expected value of type '${expectedType}', but received '${actualType}'`)
         }
       }
-      // Handle constructor types
+      // Handle constructor types (built-in types like String, Number, Boolean, etc.)
       else if (typeof expectedType === 'function') {
         // Use a more type-safe approach for checking built-in constructors
         try {
@@ -94,10 +101,12 @@ class Observable<T = unknown> {
             throw new TypeError(`Expected value of type 'symbol', but received '${typeof value}'`)
           } else if (constructorName === 'BigInt' && typeof value !== 'bigint') {
             throw new TypeError(`Expected value of type 'bigint', but received '${typeof value}'`)
+          } else if (constructorName === 'Undefined' && value !== undefined) {
+            throw new TypeError(`Expected value of type 'undefined', but received '${typeof value}'`)
           } else if (constructorName && constructorName !== 'String' && constructorName !== 'Number' &&
             constructorName !== 'Boolean' && constructorName !== 'Function' &&
             constructorName !== 'Object' && constructorName !== 'Symbol' &&
-            constructorName !== 'BigInt') {
+            constructorName !== 'BigInt' && constructorName !== 'Undefined') {
             // This should be a custom constructor
             if (!(value instanceof expectedType)) {
               throw new TypeError(`Expected value to be instance of '${constructorName}', but received '${typeof value}'`)
@@ -114,7 +123,8 @@ class Observable<T = unknown> {
           }
         }
       }
-      // Handle generic T type (no additional check needed as TypeScript handles this at compile time)
+      // Handle generic T type - this is for TypeScript's compile-time type checking
+      // At runtime, we can't validate generic types, so we skip validation
     }
 
     const equals = this.equals || is

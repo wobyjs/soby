@@ -2,12 +2,13 @@
 /* IMPORT */
 
 import { UNAVAILABLE } from '~/constants'
-import { OBSERVER, OWNER, setObserver, setOwner } from '~/context'
+import { OBSERVER, setObserver } from '~/context'
 import { lazyArrayEachRight } from '~/lazy'
 import { castError } from '~/utils'
 import type { SYMBOL_SUSPENSE } from '~/symbols'
 import type { IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue } from '~/types'
 import { callStack, Stack } from '~/methods/debugger'
+import { OWNER, setOwner } from './superroot'
 
 /* HELPERS */
 

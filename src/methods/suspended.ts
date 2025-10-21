@@ -2,7 +2,7 @@
 /* IMPORT */
 
 import { OBSERVABLE_FALSE } from '~/constants'
-import { OWNER } from '~/context'
+import { OWNER } from '../objects/superroot'
 import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { SYMBOL_SUSPENSE } from '~/symbols'

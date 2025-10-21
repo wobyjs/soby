@@ -2,7 +2,7 @@
 /* IMPORT */
 
 import { DIRTY_NO, DIRTY_MAYBE_NO, DIRTY_MAYBE_YES, DIRTY_YES } from '~/constants'
-import { OWNER, SUPER_OWNER } from '~/context'
+import { OWNER, SUPER_OWNER } from './superroot'
 import { lazyArrayPush } from '~/lazy'
 import { ObservablesArray, ObservablesSet } from '~/objects/observables'
 import Owner from '~/objects/owner'

@@ -1,8 +1,8 @@
 
 /* IMPORT */
 
+import { OWNER } from './superroot'
 import { DIRTY_MAYBE_YES, DIRTY_YES } from '~/constants'
-import { OWNER } from '~/context'
 import { lazyArrayEach, lazyArrayPush, lazySetEach } from '~/lazy'
 import Effect from '~/objects/effect'
 import Owner from '~/objects/owner'

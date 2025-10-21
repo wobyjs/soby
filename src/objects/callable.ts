@@ -5,6 +5,7 @@ import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE
 import { isFunction } from '~/utils'
 import type { IObservable, UpdateFunction, Observable, ObservableReadonly } from '~/types'
 import type { Stack } from '~/methods/debugger'
+import { deepResolve } from '~/methods/deep_resolve'
 
 /* MAIN - FUNCTIONS */
 
@@ -50,6 +51,8 @@ const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T
   //TODO: Make a frozen one instead if disposed
   value.stack = stack
   const fn = readableFunction.bind(value as any) as ObservableReadonly<T> //TSC
+  fn.valueOf = () => deepResolve(fn)
+  fn.toString = () => fn.valueOf().toString()
   fn[SYMBOL_OBSERVABLE] = true
   fn[SYMBOL_OBSERVABLE_READABLE] = value
   return fn
@@ -66,11 +69,15 @@ const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T
 const writable = <T>(value: IObservable<T>, stack?: Stack): Observable<T> & { [SYMBOL_OBSERVABLE]: true, [SYMBOL_OBSERVABLE_WRITABLE]: IObservable<T> } => {
   value.stack = stack
   const fn = writableFunction.bind(value as any) as ObservableReadonly<T> //TSC
+  fn.valueOf = () => deepResolve(fn)
+  fn.toString = () => fn.valueOf().toString()
   fn[SYMBOL_OBSERVABLE] = true
   fn[SYMBOL_OBSERVABLE_WRITABLE] = value
   return fn as any
 }
 
 /* EXPORT */
+
+
 
 export { frozen, readable, writable }

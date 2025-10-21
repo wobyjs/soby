@@ -1,4 +1,17 @@
-export const DEBUGGER = { debug: false, test: false }
+/** 
+ * Global debugger configuration object.
+ * Used to enable various debugging features in the soby library.
+ */
+export const DEBUGGER = {
+    /** Enable debug mode for detailed logging */
+    debug: false,
+    /** Enable test mode */
+    test: false,
+    /** Enable verbose comment debugging */
+    verboseComment: false,
+    /** Enable context comment debugging */
+    contextComment: false,
+}
 
 export class Stack extends Error {
     constructor(message = '', startIndex = 0) {

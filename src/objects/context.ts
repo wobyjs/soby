@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import { OWNER } from '~/context'
+import { OWNER } from './superroot'
 import { lazyArrayPush } from '~/lazy'
 import Owner from '~/objects/owner'
 import type { IOwner, ContextFunction, Contexts, IContext, IObserver, IRoot, ISuperRoot, ISuspense } from '~/types'

@@ -1,7 +1,8 @@
 
 /* IMPORT */
 
-import { OBSERVER, OWNER } from '~/context'
+import { OWNER } from '../objects/superroot'
+import { OBSERVER } from '~/context'
 import type { WithFunction } from '~/types'
 import type { Stack } from './debugger'
 

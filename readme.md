@@ -60,7 +60,9 @@ The `$()` function has the following interface:
 ```ts
 type ObservableOptions<T> = {
   equals?: (( value: T, valuePrev: T ) => boolean) | false,
-  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T,
+  toHtml?: (t: T) => string,
+  fromHtml?: (s: string) => T
 };
 
 function $ <T> (): Observable<T | undefined>;
@@ -100,6 +102,13 @@ oString('new value');
 
 // This would throw a TypeError at runtime
 // oString(123); // TypeError: Expected value of type 'string', but received 'number'
+
+// Create an Observable with HTML conversion functions
+
+const oHtml = $(new Date(), { 
+  toHtml: (date) => date.toISOString(),
+  fromHtml: (str) => new Date(str)
+});
 
 // Getter
 
@@ -584,7 +593,7 @@ store.reconcile = function reconcile <T extends StoreReconcileableTarget> ( prev
 store.untrack = function untrack <T> ( value: T ): T;
 store.unwrap = function unwrap <T> ( value: T ): T;
 ```
-The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGERER.debug = true`.
+The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGER.debug = true`. Additionally, you can enable verbose comment debugging by setting `DEBUGGER.verboseComment = true`.
 
 Usage:
 
@@ -1040,7 +1049,7 @@ Interface:
 ```ts
 function boolean ( value: FunctionMaybe<unknown> ): FunctionMaybe<boolean>;
 ```
-The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGERER.debug = true`.
+The function receives an optional `stack` parameter (an Stack object) that provides a debugging stack trace to help pinpoint the source of reactive dependencies. To enable this feature, set `DEBUGGER.debug = true`. Additionally, you can enable verbose comment debugging by setting `DEBUGGER.verboseComment = true`.
 
 Usage:
 
@@ -1145,6 +1154,79 @@ $.get ( () => 123, false ); // => () => 123
 
 $.get ( 123 ); // => 123
 ```
+
+Additionally, Observable functions created by Soby now have enhanced `valueOf()` and `toString()` methods that automatically resolve their values. These methods use `deepResolve()` to automatically resolve observables to their current values in various contexts.
+
+### Technical Implementation
+
+The enhancement was implemented in `src/objects/callable.ts` by adding the following lines to both `readable` and `writable` observable function generators:
+
+```typescript
+fn.valueOf = () => deepResolve(fn)
+fn.toString = () => fn.valueOf().toString()
+```
+
+This change affects the creation of observable functions, making them behave more naturally in JavaScript contexts where primitives are expected.
+
+### Core API Implications
+
+#### 1. Automatic Resolution in String Contexts
+
+Observables now automatically resolve to their values in string contexts:
+
+```ts
+const name = $('John');
+console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
+```
+
+#### 2. Value Coercion Consistency
+
+The `valueOf` method ensures that when the observable is used in mathematical operations or other contexts requiring value coercion, it resolves to its actual value:
+
+```ts
+const num = $(10);
+const result = num + 5; // Will now correctly compute 15
+```
+
+#### 3. Improved Developer Experience
+
+This enhancement makes working with observables more intuitive because they behave more like their primitive counterparts in common operations.
+
+#### 4. DOM Integration Benefits
+
+In web applications, this is particularly valuable when binding observables to DOM element attributes, as they will automatically resolve to their string representations without requiring explicit unwrapping.
+
+### Enhanced Automatic Resolution Examples
+
+```ts
+const count = $(5);
+console.log(`Count is: ${count}`); // Outputs: "Count is: 5"
+const result = count + 10; // Results in 15
+
+const name = $('John');
+console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
+
+// Works with nested objects containing observables
+const user = $.store({ name: $('Jane'), age: $(25) });
+console.log(`User: ${user.name}, Age: ${user.age}`); // Outputs: "User: Jane, Age: 25"
+
+// Mathematical operations with observables are now more natural
+const price = $(19.99);
+const quantity = $(3);
+const total = price * quantity; // Results in 59.97 automatically
+```
+
+### Performance Considerations
+
+The `deepResolve` function recursively resolves observables, which means for deeply nested structures there could be performance implications in hot paths. The resolution happens every time `valueOf()` or `toString()` is called.
+
+### Backward Compatibility
+
+This enhancement improves rather than breaks existing functionality:
+
+1. All existing code continues to work as before
+2. Explicit unwrapping with `$.get()` still works and may be preferred in performance-critical situations
+3. The enhancement provides additional convenience without removing any capabilities
 
 #### `$.readonly`
 
@@ -1462,11 +1544,17 @@ Interface:
 ```ts
 type ObservableOptions<T> = {
   equals?: (( value: T, valuePrev: T ) => boolean) | false,
-  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T,
+  toHtml?: (t: T) => string,
+  fromHtml?: (s: string) => T
 };
 ```
 
 The `type` option provides runtime type checking for observables. When specified, any value assigned to the observable will be validated against this type, and a `TypeError` will be thrown if the types don't match.
+
+The `toHtml` option provides a function to convert the observable value to a string representation for HTML attributes. This is useful when binding observables to DOM element attributes.
+
+The `fromHtml` option provides a function to convert a string value from HTML attributes back to the observable's type. This is useful when binding HTML attributes back to observables.
 
 The type option supports:
 - Primitive type strings: `'string'`, `'number'`, `'boolean'`, `'function'`, `'object'`, `'symbol'`, `'undefined'`, `'bigint'`
@@ -1485,6 +1573,13 @@ numberObservable( 123 );
 
 // This would throw a TypeError at runtime
 // numberObservable('123'); // TypeError: Expected value of type 'number', but received 'string'
+
+// Create an observable with HTML conversion functions
+const dateObservable = $(new Date(), { 
+  type: 'object',
+  toHtml: (date) => date.toISOString(),
+  fromHtml: (str) => new Date(str)
+});
 ```
 
 #### `StoreOptions`
@@ -1498,6 +1593,81 @@ type StoreOptions = {
   equals?: (( value: unknown, valuePrev: unknown ) => boolean) | false
 };
 ```
+
+## Enhanced Observable Functions
+
+Recent enhancements to Soby have added automatic `valueOf()` and `toString()` methods to observable functions. These methods use `deepResolve()` to automatically resolve observables to their current values in various contexts.
+
+### Technical Implementation
+
+The enhancement was implemented in `src/objects/callable.ts` by adding the following lines to both `readable` and `writable` observable function generators:
+
+```typescript
+fn.valueOf = () => deepResolve(fn)
+fn.toString = () => fn.valueOf().toString()
+```
+
+This change affects the creation of observable functions, making them behave more naturally in JavaScript contexts where primitives are expected.
+
+### Core API Implications
+
+#### 1. Automatic Resolution in String Contexts
+
+Observables now automatically resolve to their values in string contexts:
+
+```ts
+const name = $('John');
+console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
+```
+
+#### 2. Value Coercion Consistency
+
+The `valueOf` method ensures that when the observable is used in mathematical operations or other contexts requiring value coercion, it resolves to its actual value:
+
+```ts
+const num = $(10);
+const result = num + 5; // Will now correctly compute 15
+```
+
+#### 3. Improved Developer Experience
+
+This enhancement makes working with observables more intuitive because they behave more like their primitive counterparts in common operations.
+
+#### 4. DOM Integration Benefits
+
+In web applications, this is particularly valuable when binding observables to DOM element attributes, as they will automatically resolve to their string representations without requiring explicit unwrapping.
+
+### Enhanced Automatic Resolution Examples
+
+```ts
+const count = $(5);
+console.log(`Count is: ${count}`); // Outputs: "Count is: 5"
+const result = count + 10; // Results in 15
+
+const name = $('John');
+console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
+
+// Works with nested objects containing observables
+const user = $.store({ name: $('Jane'), age: $(25) });
+console.log(`User: ${user.name}, Age: ${user.age}`); // Outputs: "User: Jane, Age: 25"
+
+// Mathematical operations with observables are now more natural
+const price = $(19.99);
+const quantity = $(3);
+const total = price * quantity; // Results in 59.97 automatically
+```
+
+### Performance Considerations
+
+The `deepResolve` function recursively resolves observables, which means for deeply nested structures there could be performance implications in hot paths. The resolution happens every time `valueOf()` or `toString()` is called.
+
+### Backward Compatibility
+
+This enhancement improves rather than breaks existing functionality:
+
+1. All existing code continues to work as before
+2. Explicit unwrapping with `$.get()` still works and may be preferred in performance-critical situations
+3. The enhancement provides additional convenience without removing any capabilities
 
 ## Thanks
 

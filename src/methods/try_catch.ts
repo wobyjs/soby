@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import { OWNER } from '~/context'
+import { OWNER } from '../objects/superroot'
 import memo from '~/methods/memo'
 import $ from '~/methods/observable'
 import resolve from '~/methods/resolve'

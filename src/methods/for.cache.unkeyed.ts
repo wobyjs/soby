@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import { OWNER } from '~/context'
+import { OWNER } from '../objects/superroot'
 import { lazySetAdd, lazySetDelete } from '~/lazy'
 import cleanup from '~/methods/cleanup'
 import get from '~/methods/get'

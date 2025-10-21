@@ -1,10 +1,11 @@
-## [unreleased]
+## [15.1.13] - 2025-10-03
 
 ### 🚀 Features
 
 - Add runtime type checking to Observables and fix selector equality
 - Add runtime type checking and fix selector equality
 - *(types)* Improve observable type inference and fix Root.wrap
+- *(observable)* Add runtime type checking and fix Root.wrap
 ## [15.1.3] - 2025-06-11
 
 ### 💼 Other

@@ -118,6 +118,16 @@ type ObservableReadonlyLike<T = unknown> = {
 type ObservableOptions<T = unknown> = {
   equals?: EqualsFunction<T> | false,
   type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
+  /** 
+   * Function to convert the observable value to a string representation for HTML attributes.
+   * This is useful when binding observables to DOM element attributes.
+   */
+  toHtml?: (t: T) => string
+  /** 
+   * Function to convert a string value from HTML attributes back to the observable's type.
+   * This is useful when binding HTML attributes back to observables.
+   */
+  fromHtml?: (s: string) => T
 }
 
 declare const ObservableSymbol: unique symbol

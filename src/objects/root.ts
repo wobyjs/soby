@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import { OWNER } from '~/context'
+import { OWNER } from './superroot'
 import { lazySetAdd, lazySetDelete } from '~/lazy'
 import Owner from '~/objects/owner'
 import { SYMBOL_SUSPENSE } from '~/symbols'

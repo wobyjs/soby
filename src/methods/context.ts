@@ -1,7 +1,7 @@
 
 /* IMPORT */
 
-import { OWNER } from '~/context'
+import { OWNER } from '../objects/superroot'
 import Context from '~/objects/context'
 import { isSymbol, noop } from '~/utils'
 import type { ContextFunction, Contexts } from '~/types'
