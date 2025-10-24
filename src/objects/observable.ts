@@ -1,4 +1,3 @@
-
 /* IMPORT */
 
 import { DIRTY_MAYBE_NO, DIRTY_YES, UNINITIALIZED } from '~/constants'
@@ -65,51 +64,92 @@ class Observable<T = unknown> {
     if (this.options?.type !== undefined) {
       const expectedType = this.options.type
 
-      // Handle string literal types
-      if (typeof expectedType === 'string') {
-        const actualType = typeof value
-        // Special handling for null which has typeof 'object'
-        if (expectedType === 'object' && value === null) {
-          // This is valid
-        }
-        // Special handling for undefined values
-        else if (actualType === 'undefined') {
-          // This is valid
-        }
-        else if (actualType !== expectedType) {
-          throw new TypeError(`Expected value of type '${expectedType}', but received '${actualType}'`)
-        }
-      }
-      // Handle constructor types (built-in types like String, Number, Boolean, etc.)
-      else if (typeof expectedType === 'function') {
-        // Use a more type-safe approach for checking built-in constructors
+      // Handle string literal types and constructor types
+      if (typeof expectedType === 'string' || typeof expectedType === 'function') {
+        // Use a more type-safe approach for checking types
         try {
-          // Check if it's one of the built-in primitive types by name
-          const constructorName = (expectedType as any).name
+          // Handle string types - both string literal and String constructor
+          if (expectedType === 'string' || expectedType === String) {
+            if (typeof value !== 'string') {
+              throw new TypeError(`Expected value of type 'string', but received '${typeof value}'`)
+            }
+          }
+          // Handle number types - both string literal and Number constructor
+          else if (expectedType === 'number' || expectedType === Number) {
+            if (typeof value !== 'number') {
+              throw new TypeError(`Expected value of type 'number', but received '${typeof value}'`)
+            }
+          }
+          // Handle boolean types - both string literal and Boolean constructor
+          // Enhanced to support HTML boolean behavior
+          else if (expectedType === 'boolean' || expectedType === Boolean) {
+            // For boolean types, we allow boolean, string, or undefined values
+            // and convert them using HTML boolean rules
+            if (typeof value !== 'boolean' && typeof value !== 'string' && value !== undefined) {
+              throw new TypeError(`Expected value of type 'boolean', 'string', or 'undefined' for boolean, but received '${typeof value}'`)
+            }
+          }
+          // Handle function types - both string literal and Function constructor
+          // For functions, we check if the value is an array and the first element is a function
+          else if (expectedType === 'function' || expectedType === Function) {
+            // Check if value is an array with a function as the first element (React-like convention)
+            if (Array.isArray(value) && typeof value[0] === 'function') {
+              // This is valid - function stored in array
+            }
+            // Also allow direct function values for backward compatibility
+            else if (typeof value === 'function') {
+              // This is valid - direct function
+            }
+            else {
+              throw new TypeError(`Expected value of type 'function' (as [fn] array or direct function), but received '${typeof value}'`)
+            }
+          }
+          // Handle object types - both string literal and Object constructor
+          else if (expectedType === 'object' || expectedType === Object) {
+            if (typeof value !== 'object' || value === null) {
+              throw new TypeError(`Expected value of type 'object', but received '${typeof value}'`)
+            }
+          }
+          // Handle symbol types - both string literal and Symbol constructor
+          else if (expectedType === 'symbol' || expectedType === (Symbol as any)) {
+            if (typeof value !== 'symbol') {
+              throw new TypeError(`Expected value of type 'symbol', but received '${typeof value}'`)
+            }
+          }
+          // Handle bigint types - both string literal and BigInt constructor
+          else if (expectedType === 'bigint' || expectedType === (BigInt as any)) {
+            if (typeof value !== 'bigint') {
+              throw new TypeError(`Expected value of type 'bigint', but received '${typeof value}'`)
+            }
+          }
+          // Handle undefined types - both string literal and custom handling
+          else if (expectedType === 'undefined') {
+            if (value !== undefined) {
+              throw new TypeError(`Expected value of type 'undefined', but received '${typeof value}'`)
+            }
+          }
+          // Handle custom constructor types (excluding built-in types)
+          else if (typeof expectedType === 'function') {
+            // Check if it's one of the built-in primitive types by name
+            const constructorName = (expectedType as any).name
 
-          if (constructorName === 'String' && typeof value !== 'string') {
-            throw new TypeError(`Expected value of type 'string', but received '${typeof value}'`)
-          } else if (constructorName === 'Number' && typeof value !== 'number') {
-            throw new TypeError(`Expected value of type 'number', but received '${typeof value}'`)
-          } else if (constructorName === 'Boolean' && typeof value !== 'boolean') {
-            throw new TypeError(`Expected value of type 'boolean', but received '${typeof value}'`)
-          } else if (constructorName === 'Function' && typeof value !== 'function') {
-            throw new TypeError(`Expected value of type 'function', but received '${typeof value}'`)
-          } else if (constructorName === 'Object' && (typeof value !== 'object' || value === null)) {
-            throw new TypeError(`Expected value of type 'object', but received '${typeof value}'`)
-          } else if (constructorName === 'Symbol' && typeof value !== 'symbol') {
-            throw new TypeError(`Expected value of type 'symbol', but received '${typeof value}'`)
-          } else if (constructorName === 'BigInt' && typeof value !== 'bigint') {
-            throw new TypeError(`Expected value of type 'bigint', but received '${typeof value}'`)
-          } else if (constructorName === 'Undefined' && value !== undefined) {
-            throw new TypeError(`Expected value of type 'undefined', but received '${typeof value}'`)
-          } else if (constructorName && constructorName !== 'String' && constructorName !== 'Number' &&
-            constructorName !== 'Boolean' && constructorName !== 'Function' &&
-            constructorName !== 'Object' && constructorName !== 'Symbol' &&
-            constructorName !== 'BigInt' && constructorName !== 'Undefined') {
-            // This should be a custom constructor
-            if (!(value instanceof expectedType)) {
-              throw new TypeError(`Expected value to be instance of '${constructorName}', but received '${typeof value}'`)
+            // Only handle custom constructors that are not built-in types
+            // We need to make sure we don't handle built-in constructors here
+            // since they should have been handled above
+            const isBuiltInConstructor =
+              constructorName === 'String' ||
+              constructorName === 'Number' ||
+              constructorName === 'Boolean' ||
+              constructorName === 'Function' ||
+              constructorName === 'Object' ||
+              constructorName === 'Symbol' ||
+              constructorName === 'BigInt'
+
+            if (constructorName && !isBuiltInConstructor) {
+              // This should be a custom constructor
+              if (!(value instanceof expectedType)) {
+                throw new TypeError(`Expected value to be instance of '${constructorName}', but received '${typeof value}'`)
+              }
             }
           }
         } catch (e) {

@@ -1,5 +1,6 @@
+/*
+*/
 
-/* OBJECTS */
 import type { Stack } from '~/methods/debugger'
 
 type IContext = import('~/objects/context').default
@@ -115,9 +116,14 @@ type ObservableReadonlyLike<T = unknown> = {
   (): T
 }
 
+/**
+ * ObservableOptions type definition
+ */
+
 type ObservableOptions<T = unknown> = {
   equals?: EqualsFunction<T> | false,
-  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' | Constructor<any> | T
+  type?: 'string' | 'function' | 'object' | 'number' | 'boolean' | 'symbol' | 'undefined' | 'bigint' |
+  String | Function | Object | Number | Boolean | Symbol | BigInt | Constructor<any> | T
   /** 
    * Function to convert the observable value to a string representation for HTML attributes.
    * This is useful when binding observables to DOM element attributes.

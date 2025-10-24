@@ -50,3 +50,13 @@ export default $
 export { batch, boolean, cleanup, context, disposed, effect, _for as for, get, _if as if, isBatching, isObservable, isObservableWritable, isStore, memo, observable, owner, readonly, resolve, root, selector, store, suspended, suspense, _switch as switch, ternary, tick, tryCatch, untrack, untracked, _with as with }
 export { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_BOOLEAN, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE, SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_UNCACHED, SYMBOL_UNTRACKED, SYMBOL_UNTRACKED_UNWRAPPED }
 export type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions }
+
+export * from './types/html-boolean'
+export * from './types/html-number'
+export * from './types/html-date'
+export * from './types/html-bigint'
+export * from './types/html-object'
+export * from './types/html-length'
+export * from './types/html-box'
+export * from './types/html-color'
+export * from './types/html-style'

@@ -21,7 +21,7 @@ npm install --save soby
 | [`$.isObservable`](#isobservable) |                           | [`$.suspended`](#suspended) | [`ObservableReadonlyLike`](#observablereadonlylike) |
 | [`$.isStore`](#isstore)           |                           | [`$.untracked`](#untracked) | [`ObservableOptions`](#observableoptions)           |
 | [`$.memo`](#memo)                 |                           |                             | [`StoreOptions`](#storeoptions)                     |
-| [`$.observable`](#observable)     |                           |                             |                                                     |
+| [`$.observable`](#observable)     |                           |                             | [HTML Type Utilities](#html-type-utilities)        |
 | [`$.owner`](#owner)               |                           |                             |                                                     |
 | [`$.root`](#root)                 |                           |                             |                                                     |
 | [`$.store`](#store)               |                           |                             |                                                     |
@@ -363,7 +363,7 @@ function isObservable <T = unknown> ( value: unknown ): value is Observable<T> |
 
 Usage:
 
-```ts
+````ts
 import $ from 'soby';
 
 // Checking
@@ -386,7 +386,7 @@ function isStore ( value: unknown ): boolean;
 
 Usage:
 
-```ts
+````ts
 import $ from 'soby';
 
 // Checking
@@ -415,38 +415,22 @@ function memo <T> ( fn: () => T, options?: MemoOptions<T> ): ObservableReadonly<
 
 Usage:
 
-```ts
+````ts
 import $ from 'soby';
 
 // Make a new memoized Observable
 
 const a = $(1);
-const b = $(2);
-const c = $(3);
-
-const sum = $.memo ( () => {
-  return a () + b () + c ();
+const double = $.memo ( () => {
+  return a () * 2;
 });
 
-sum (); // => 6
+double (); // => 2
 
 a ( 2 );
 
-sum (); // => 7
+double (); // => 4
 
-b ( 3 );
-
-sum (); // => 8
-
-c ( 4 );
-
-sum (); // => 9
-
-// Make a new synchronous memo, which is executed and re-executed immediately when needed
-
-const sumSync = $.memo ( () => {
-  return a () + b () + c ();
-}, { sync: true } );
 ```
 
 #### `$.observable`
@@ -597,7 +581,7 @@ The function receives an optional `stack` parameter (an Stack object) that provi
 
 Usage:
 
-```ts
+````ts
 import $ from 'soby';
 
 // Make a reactive plain object
@@ -1161,7 +1145,7 @@ Additionally, Observable functions created by Soby now have enhanced `valueOf()`
 
 The enhancement was implemented in `src/objects/callable.ts` by adding the following lines to both `readable` and `writable` observable function generators:
 
-```typescript
+``typescript
 fn.valueOf = () => deepResolve(fn)
 fn.toString = () => fn.valueOf().toString()
 ```
@@ -1174,7 +1158,7 @@ This change affects the creation of observable functions, making them behave mor
 
 Observables now automatically resolve to their values in string contexts:
 
-```ts
+````ts
 const name = $('John');
 console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
 ```
@@ -1183,7 +1167,7 @@ console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
 
 The `valueOf` method ensures that when the observable is used in mathematical operations or other contexts requiring value coercion, it resolves to its actual value:
 
-```ts
+````ts
 const num = $(10);
 const result = num + 5; // Will now correctly compute 15
 ```
@@ -1416,7 +1400,7 @@ function untracked <T> ( value: T ): () => T;
 
 Usage:
 
-```ts
+````ts
 import $ from 'soby';
 
 // Creating an untracked function
@@ -1564,7 +1548,7 @@ The type option supports:
 
 Example:
 
-```ts
+````ts
 // Create an observable that only accepts number values
 const numberObservable = $( 0, { type: 'number' } );
 
@@ -1594,89 +1578,221 @@ type StoreOptions = {
 };
 ```
 
-## Enhanced Observable Functions
+## HTML Type Utilities
 
-Recent enhancements to Soby have added automatic `valueOf()` and `toString()` methods to observable functions. These methods use `deepResolve()` to automatically resolve observables to their current values in various contexts.
+Soby provides a set of built-in HTML type utilities that implement the [ObservableOptions](#observableoptions) interface. These utilities enable seamless conversion between JavaScript values and HTML attributes, making them perfect for use with web components and DOM bindings.
 
-### Technical Implementation
+Each utility provides:
+- `equals`: A comparison function for determining value equality
+- `type`: The JavaScript constructor for type validation
+- `toHtml`: A function to convert the value to an HTML attribute string
+- `fromHtml`: A function to convert an HTML attribute string back to the JavaScript value
 
-The enhancement was implemented in `src/objects/callable.ts` by adding the following lines to both `readable` and `writable` observable function generators:
+### `HtmlBoolean`
 
-```typescript
-fn.valueOf = () => deepResolve(fn)
-fn.toString = () => fn.valueOf().toString()
-```
+The `HtmlBoolean` utility handles conversion between JavaScript boolean values and HTML attributes. In HTML, boolean attributes are typically represented as either present (true) or absent (false). This utility treats empty strings and the string "true" as true, and everything else as false.
 
-This change affects the creation of observable functions, making them behave more naturally in JavaScript contexts where primitives are expected.
-
-### Core API Implications
-
-#### 1. Automatic Resolution in String Contexts
-
-Observables now automatically resolve to their values in string contexts:
+Interface:
 
 ```ts
-const name = $('John');
-console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
+const HtmlBoolean: ObservableOptions<boolean> = {
+  equals: (a: boolean | string, b: boolean | string) => boolean,
+  type: Boolean,
+  toHtml: (value: boolean | string) => string | undefined,
+  fromHtml: (value: string) => boolean
+};
 ```
 
-#### 2. Value Coercion Consistency
-
-The `valueOf` method ensures that when the observable is used in mathematical operations or other contexts requiring value coercion, it resolves to its actual value:
+Usage:
 
 ```ts
-const num = $(10);
-const result = num + 5; // Will now correctly compute 15
+import $, { HtmlBoolean } from 'soby';
+
+// Create a boolean observable with HTML conversion
+const visible = $(true, HtmlBoolean);
+
+// This will set the HTML attribute to an empty string (which represents true in HTML)
+visible.toHtml(true); // => ""
+
+// This will convert an HTML attribute back to a boolean
+visible.fromHtml(""); // => true
+visible.fromHtml("true"); // => true
+visible.fromHtml("false"); // => false
 ```
 
-#### 3. Improved Developer Experience
+### `HtmlNumber`
 
-This enhancement makes working with observables more intuitive because they behave more like their primitive counterparts in common operations.
+The `HtmlNumber` utility handles conversion between JavaScript number values and HTML attributes. It treats empty strings and non-numeric values as NaN.
 
-#### 4. DOM Integration Benefits
-
-In web applications, this is particularly valuable when binding observables to DOM element attributes, as they will automatically resolve to their string representations without requiring explicit unwrapping.
-
-### Enhanced Automatic Resolution Examples
+Interface:
 
 ```ts
-const count = $(5);
-console.log(`Count is: ${count}`); // Outputs: "Count is: 5"
-const result = count + 10; // Results in 15
-
-const name = $('John');
-console.log(`Hello, ${name}!`); // Outputs: "Hello, John!" automatically
-
-// Works with nested objects containing observables
-const user = $.store({ name: $('Jane'), age: $(25) });
-console.log(`User: ${user.name}, Age: ${user.age}`); // Outputs: "User: Jane, Age: 25"
-
-// Mathematical operations with observables are now more natural
-const price = $(19.99);
-const quantity = $(3);
-const total = price * quantity; // Results in 59.97 automatically
+const HtmlNumber: ObservableOptions<number> = {
+  equals: (a: number | string, b: number | string) => boolean,
+  type: Number,
+  toHtml: (value: number | string) => string | undefined,
+  fromHtml: (value: string) => number
+};
 ```
 
-### Performance Considerations
+Usage:
 
-The `deepResolve` function recursively resolves observables, which means for deeply nested structures there could be performance implications in hot paths. The resolution happens every time `valueOf()` or `toString()` is called.
+```ts
+import $, { HtmlNumber } from 'soby';
 
-### Backward Compatibility
+// Create a number observable with HTML conversion
+const count = $(0, HtmlNumber);
 
-This enhancement improves rather than breaks existing functionality:
+// Convert a number to an HTML attribute string
+count.toHtml(42); // => "42"
+count.toHtml(NaN); // => undefined
 
-1. All existing code continues to work as before
-2. Explicit unwrapping with `$.get()` still works and may be preferred in performance-critical situations
-3. The enhancement provides additional convenience without removing any capabilities
+// Convert an HTML attribute string back to a number
+count.fromHtml("123"); // => 123
+count.fromHtml(""); // => NaN
+```
 
-## Thanks
+### `HtmlDate`
 
-- **[reactively](https://github.com/modderme123/reactively)**: for teaching me the awesome push/pull hybrid algorithm that this library is currently using.
-- **[S](https://github.com/adamhaile/S)**: for paving the way to this awesome reactive way of writing software.
-- **[sinuous/observable](https://github.com/luwes/sinuous/tree/master/packages/sinuous/observable)**: for making me fall in love with Observables and providing a good implementation that this library was originally based on.
-- **[solid](https://www.solidjs.com)**: for being a great sort of reference implementation, popularizing Signal-based reactivity, and having built a great community.
-- **[trkl](https://github.com/jbreckmckye/trkl)**: for being so inspiringly small.
+The `HtmlDate` utility handles conversion between JavaScript Date objects and HTML attributes using ISO string format. It treats empty strings and invalid dates as undefined.
 
-## License
+Interface:
 
-MIT © Fabio Spampinato
+```ts
+const HtmlDate: ObservableOptions<Date> = {
+  equals: (a: Date | string | number, b: Date | string | number) => boolean,
+  type: Date,
+  toHtml: (value: Date | string | number) => string | undefined,
+  fromHtml: (value: string) => Date
+};
+```
+
+Usage:
+
+```ts
+import $, { HtmlDate } from 'soby';
+
+// Create a date observable with HTML conversion
+const date = $(new Date(), HtmlDate);
+
+// Convert a Date to an HTML attribute string (ISO format)
+const now = new Date();
+date.toHtml(now); // => "2023-01-01T00:00:00.000Z"
+
+// Convert an HTML attribute string back to a Date
+date.fromHtml("2023-01-01T00:00:00.000Z"); // => Date object
+date.fromHtml(""); // => Invalid Date (NaN)
+```
+
+### `HtmlBigInt`
+
+The `HtmlBigInt` utility handles conversion between JavaScript BigInt values and HTML attributes. It treats empty strings and invalid values as undefined.
+
+Interface:
+
+```ts
+const HtmlBigInt: ObservableOptions<bigint> = {
+  equals: (a: bigint | string | number, b: bigint | string | number) => boolean,
+  type: BigInt,
+  toHtml: (value: bigint | string | number) => string | undefined,
+  fromHtml: (value: string) => bigint
+};
+```
+
+Usage:
+
+```ts
+import $, { HtmlBigInt } from 'soby';
+
+// Create a BigInt observable with HTML conversion
+const bigNumber = $(BigInt(0), HtmlBigInt);
+
+// Convert a BigInt to an HTML attribute string
+bigNumber.toHtml(BigInt(123)); // => "123"
+
+// Convert an HTML attribute string back to a BigInt
+bigNumber.fromHtml("456"); // => 456n
+bigNumber.fromHtml(""); // => 0n (default)
+```
+
+### `HtmlObject`
+
+The `HtmlObject` utility handles conversion between JavaScript objects and HTML attributes using JSON serialization. It treats empty strings and invalid JSON as undefined.
+
+Interface:
+
+```ts
+const HtmlObject: ObservableOptions<object> = {
+  equals: (a: object | string, b: object | string) => boolean,
+  type: Object,
+  toHtml: (value: object | string) => string | undefined,
+  fromHtml: (value: string) => object
+};
+```
+
+Usage:
+
+```ts
+import $, { HtmlObject } from 'soby';
+
+// Create an object observable with HTML conversion
+const data = $({ name: "John", age: 30 }, HtmlObject);
+
+// Convert an object to an HTML attribute string (JSON)
+data.toHtml({ name: "John", age: 30 }); // => '{"name":"John","age":30}'
+
+// Convert an HTML attribute string back to an object
+data.fromHtml('{"name":"Jane","age":25}'); // => { name: "Jane", age: 25 }
+data.fromHtml(""); // => {} (default)
+```
+
+### `HtmlLength`
+
+The `HtmlLength` utility handles conversion between CSS length values and HTML attributes. It supports various CSS units (px, em, rem, %, etc.) as well as special keywords (auto, inherit, initial, unset).
+
+Interface:
+
+```ts
+type CSSUnit =
+  | `${number}px`
+  | `${number}em`
+  | `${number}rem`
+  | `${number}%`
+  | `${number}vh`
+  | `${number}vw`
+  | `${number}vmin`
+  | `${number}vmax`
+  | `${number}ch`
+  | `${number}ex`
+  | `${number}pt`
+  | `${number}pc`
+  | `${number}in`
+  | `${number}cm`
+  | `${number}mm`
+
+type CSSLength = CSSUnit | "auto" | "inherit" | "initial" | "unset"
+
+const HtmlLength: ObservableOptions<CSSLength> = {
+  equals: (a: CSSLength, b: CSSLength) => boolean,
+  type: String,
+  toHtml: (value: CSSLength) => string,
+  fromHtml: (value: string) => CSSLength
+};
+```
+
+Usage:
+
+````ts
+import $, { HtmlLength } from 'soby';
+
+// Create a CSS length observable with HTML conversion
+const width = $("100px", HtmlLength);
+
+// Convert a CSS length to an HTML attribute string
+width.toHtml("50%"); // => "50%"
+width.toHtml("auto"); // => "auto"
+
+// Convert an HTML attribute string back to a CSS length
+width.fromHtml("200px"); // => "200px"
+width.fromHtml("inherit"); // => "inherit"
+```
