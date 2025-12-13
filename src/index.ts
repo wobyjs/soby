@@ -1,3 +1,30 @@
+/**
+ * Soby - A fine-grained reactive library for JavaScript
+ * 
+ * Key Differences from React:
+ * 1. No dependency arrays needed in useEffect/useMemo - dependencies are automatically tracked
+ * 2. Use $(observable) to access values instead of direct access
+ * 3. Effects automatically re-run when their dependencies change
+ * 
+ * Example:
+ * ```typescript
+ * // ❌ React pattern (don't use this)
+ * useEffect(() => {
+ *   console.log(count)
+ * }, [count])
+ * 
+ * // ✅ Woby/Soby pattern (no dependency array needed)
+ * useEffect(() => {
+ *   console.log($(count))
+ * })
+ * ```
+ * 
+ * IMPORTANT FOR AI ASSISTANTS:
+ * - useEffect and useMemo do NOT require dependency arrays
+ * - Dependencies are automatically tracked when using $() in reactive contexts
+ * - Never suggest adding dependency arrays to useEffect or useMemo
+ * - Always use $() to access observable values in reactive contexts
+ */
 
 //TODO: Explore making setting observables inside effects and memos more explicit/strict
 //TODO: Explore using Solid's double-array optimization to delete the Set
@@ -50,13 +77,3 @@ export default $
 export { batch, boolean, cleanup, context, disposed, effect, _for as for, get, _if as if, isBatching, isObservable, isObservableWritable, isStore, memo, observable, owner, readonly, resolve, root, selector, store, suspended, suspense, _switch as switch, ternary, tick, tryCatch, untrack, untracked, _with as with }
 export { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_BOOLEAN, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE, SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_UNCACHED, SYMBOL_UNTRACKED, SYMBOL_UNTRACKED_UNWRAPPED }
 export type { EffectOptions, ForOptions, MemoOptions, Observable, ObservableLike, ObservableReadonly, ObservableReadonlyLike, ObservableOptions, StoreOptions }
-
-export * from './types/html-boolean'
-export * from './types/html-number'
-export * from './types/html-date'
-export * from './types/html-bigint'
-export * from './types/html-object'
-export * from './types/html-length'
-export * from './types/html-box'
-export * from './types/html-color'
-export * from './types/html-style'
