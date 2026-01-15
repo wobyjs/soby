@@ -37,7 +37,7 @@ import { Stack } from './debugger'
 const effect = (fn: EffectFunction, options?: EffectOptions): DisposeFunction => {
 
   const effect = new Effect(fn, options)
-  const dispose = (stack?: Stack) => effect.dispose(true)
+  const dispose = (opts?: { stack?: Stack, env?: any }) => effect.dispose(true)
 
   return dispose
 

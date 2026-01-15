@@ -214,7 +214,7 @@ class CacheUnkeyed<T, R> {
 
           const $value = memo(() => get(observable.get())) as Indexed<T> //TSC
 
-          const result = results[index] = suspended ? suspense(() => suspended.get(), () => resolve(fn($value, $index)), stack) : resolve(fn($value, $index))
+          const result = results[index] = suspended ? suspense(() => suspended.get(), () => resolve(fn($value, $index)), { stack }) : resolve(fn($value, $index))
 
           mapped.value = observable
           mapped.result = result

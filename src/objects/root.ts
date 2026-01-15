@@ -56,10 +56,10 @@ class Root extends Owner {
 
   wrap<T>(fn: WrappedDisposableFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver, stack?: Stack): T {
 
-    const dispose: DisposeFunction = (disposeStack?: Stack) => this.dispose(true)
+    const dispose: DisposeFunction = (opts?: { stack?: Stack, env?: any }) => this.dispose(true)
 
-    // Create a wrapper that accepts the stack parameter from Owner.wrap and passes both stack and dispose to the original function
-    const wrapper: WrappedFunction<T> = (callStack?: Stack) => fn(callStack, dispose)
+    // Create a wrapper that accepts the options object from Owner.wrap and passes it along with dispose to the original function
+    const wrapper: WrappedFunction<T> = (opts?: { stack?: Stack, env?: any }) => fn(opts, dispose)
 
     return super.wrap(wrapper, this, undefined, stack as any)
 

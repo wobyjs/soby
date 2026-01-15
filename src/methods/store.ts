@@ -12,7 +12,7 @@ import { readable } from '~/objects/callable'
 import ObservableClass from '~/objects/observable'
 import { SYMBOL_STORE, SYMBOL_STORE_KEYS, SYMBOL_STORE_OBSERVABLE, SYMBOL_STORE_TARGET, SYMBOL_STORE_VALUES, SYMBOL_STORE_UNTRACKED } from '~/symbols'
 import { castArray, is, isArray, isFunction, isObject, noop, nope } from '~/utils'
-import type { IObservable, CallbackFunction, DisposeFunction, EqualsFunction, Observable, ObservableOptions, StoreOptions, ArrayMaybe, LazySet } from '~/types'
+import type { IObservable, CallbackFunction, DisposeFunction, EqualsFunction, Observable, ObservableOptions, StoreOptions, ArrayMaybe, LazySet, Env } from '~/types'
 import { callStack, Stack } from './debugger'
 
 /* TYPES */
@@ -124,13 +124,13 @@ const StoreListenersRegular = {
     nodes.forEach(traverse)
     return (): void => {
       listeners.forEach(listener => {
-        listener(stack)
+        listener({ stack })
       })
     }
   },
-  register: (node: StoreNode, stack?: Stack): void => {
+  register: (node: StoreNode, stack?: Stack, env?: Env): void => {
     StoreListenersRegular.nodes.add(node)
-    StoreScheduler.schedule(stack)
+    StoreScheduler.schedule(stack, env)
   },
   reset: (): void => {
     StoreListenersRegular.listeners = new Set()
@@ -154,16 +154,16 @@ const StoreListenersRoots = {
       })
     }
   },
-  register: (store: StoreNode, root: unknown, stack?: Stack): void => {
+  register: (store: StoreNode, root: unknown, stack?: Stack, env?: Env): void => {
     const roots = StoreListenersRoots.nodes.get(store) || new Set()
     roots.add(root)
     StoreListenersRoots.nodes.set(store, roots)
-    StoreScheduler.schedule(stack)
+    StoreScheduler.schedule(stack, env)
   },
-  registerWith: (current: StoreNode | undefined, parent: StoreNode, key: StoreKey, stack?: Stack): void => {
+  registerWith: (current: StoreNode | undefined, parent: StoreNode, key: StoreKey, stack?: Stack, env?: Env): void => {
     if (!parent.parents) {
       const root = current?.store || untrack(() => parent.store[key])
-      StoreListenersRoots.register(parent, root, stack)
+      StoreListenersRoots.register(parent, root, stack, env)
     } else {
       const traversed = new Set<StoreNode>()
       const traverse = (node: StoreNode): void => {
@@ -171,7 +171,7 @@ const StoreListenersRoots = {
         traversed.add(node)
         lazySetEach(node.parents, parent => {
           if (!parent.parents) {
-            StoreListenersRoots.register(parent, node.store, stack)
+            StoreListenersRoots.register(parent, node.store, stack, env)
           }
           traverse(parent)
         })
@@ -188,22 +188,22 @@ const StoreScheduler = {
   /* VARIABLES */
   active: false,
   /* API */
-  flush: (stack?: Stack): void => {
+  flush: (stack?: Stack, env?: Env): void => {
     const flushRegular = StoreListenersRegular.prepare(stack)
     const flushRoots = StoreListenersRoots.prepare()
     StoreScheduler.reset()
-    flushRegular(stack)
-    flushRoots(stack)
+    flushRegular({ stack })
+    flushRoots({ stack })
   },
-  flushIfNotBatching: (stack?: Stack): void => {
+  flushIfNotBatching: (stack?: Stack, env?: Env): void => {
     if (isBatching()) {
       if (BATCH) {
-        BATCH.finally(() => StoreScheduler.flushIfNotBatching(stack))
+        BATCH.finally(() => StoreScheduler.flushIfNotBatching(stack, env))
       } else {
         setTimeout(StoreScheduler.flushIfNotBatching, 0)
       }
     } else {
-      StoreScheduler.flush(stack)
+      StoreScheduler.flush(stack, env)
     }
   },
   reset: (): void => {
@@ -211,10 +211,10 @@ const StoreScheduler = {
     StoreListenersRegular.reset()
     StoreListenersRoots.reset()
   },
-  schedule: (stack?: Stack): void => {
+  schedule: (stack?: Stack, env?: Env): void => {
     if (StoreScheduler.active) return
     StoreScheduler.active = true
-    queueMicrotask(() => StoreScheduler.flushIfNotBatching(stack))
+    queueMicrotask(() => StoreScheduler.flushIfNotBatching(stack, env))
   }
 }
 
@@ -859,14 +859,14 @@ store.on = (target: ArrayMaybe<StoreListenableTarget>, listener: CallbackFunctio
 
   const disposers = selectors.map(selector => {
     let inited = false
-    return effect((stack) => {
+    return effect((opts) => {
       if (inited) {
         StoreListenersRegular.listeners.add(listener)
-        StoreScheduler.schedule(stack)
+        StoreScheduler.schedule(opts?.stack)
       }
       inited = true
       selector()
-    }, { suspense: false, sync: true, stack })
+    }, { suspense: false, sync: true, env: 'browser', stack })
   })
 
   nodes.forEach(node => {
@@ -875,12 +875,12 @@ store.on = (target: ArrayMaybe<StoreListenableTarget>, listener: CallbackFunctio
 
   /* OFF */
 
-  return (stack?: Stack): void => {
+  return (opts?: { stack?: Stack, env?: any }): void => {
 
     StoreListenersRegular.active -= 1
 
     disposers.forEach(disposer => {
-      disposer(stack)
+      disposer(opts)
     })
 
     nodes.forEach(node => {

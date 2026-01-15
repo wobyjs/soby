@@ -32,10 +32,11 @@
     "read": "node tasks/read.js",
     "store": "node tasks/store.js",
     "store:creation": "node tasks/store.creation.js",
+    "some tsex issue use the following in cli": "cd \"D:\\Developments\\tslib\\@woby\\soby\" && pnpm test",
     "test": "tsex test",
     "test:watch": "tsex test --watch",
     "updates": "node tasks/updates.js",
-    "//prepublishOnly": "scex -s clean compile compile:mangle test"
+    "prepublishOnly": "scex -s clean compile compile:mangle test"
   },
   "keywords": [
     "observable",

@@ -6,13 +6,13 @@ import { OBSERVER, setObserver } from '~/context'
 import { lazyArrayEachRight } from '~/lazy'
 import { castError } from '~/utils'
 import type { SYMBOL_SUSPENSE } from '~/symbols'
-import type { IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue } from '~/types'
+import type { IContext, IObserver, IOwner, IRoot, ISuperRoot, ISuspense, CleanupFunction, ErrorFunction, WrappedFunction, Callable, Contexts, LazyArray, LazySet, LazyValue, Env } from '~/types'
 import { callStack, Stack } from '~/methods/debugger'
 import { OWNER, setOwner } from './superroot'
 
 /* HELPERS */
 
-const onCleanup = (cleanup: Callable<CleanupFunction>): void => cleanup.call(cleanup, callStack())
+const onCleanup = (cleanup: Callable<CleanupFunction>): void => cleanup.call(cleanup, { stack: callStack() })
 const onDispose = (owner: IOwner): void => owner.dispose(true)
 
 /* MAIN */
@@ -82,7 +82,7 @@ class Owner {
 
   }
 
-  wrap<T>(fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Stack): T {
+  wrap<T>(fn: WrappedFunction<T>, owner: IContext | IObserver | IRoot | ISuperRoot | ISuspense, observer: IObserver | undefined, stack?: Stack, env?: Env): T {
 
     const ownerPrev = OWNER
     const observerPrev = OBSERVER
@@ -92,7 +92,7 @@ class Owner {
 
     try {
 
-      return fn(stack)
+      return fn({ stack, env })
 
     } catch (error: unknown) {
 

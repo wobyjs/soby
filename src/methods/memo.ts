@@ -39,6 +39,7 @@ import { callStack } from './debugger'
  */
 const memo = <T>(fn: MemoFunction<T>, options?: MemoOptions<T | undefined>): ObservableReadonly<T> => {
   const stack = options?.stack ?? callStack()
+  const env = options?.env
 
   if (isObservableFrozen(fn)) {
 
@@ -46,7 +47,7 @@ const memo = <T>(fn: MemoFunction<T>, options?: MemoOptions<T | undefined>): Obs
 
   } else if (isUntracked(fn)) {
 
-    return frozen(fn(stack))
+    return frozen(fn({ stack, env }))
 
   } else {
 
@@ -56,7 +57,6 @@ const memo = <T>(fn: MemoFunction<T>, options?: MemoOptions<T | undefined>): Obs
     return observable
 
   }
-
 }
 
 /* EXPORT */

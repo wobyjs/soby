@@ -25,19 +25,23 @@ type ISuperRoot = import('~/objects/superroot').default
 
 type ISuspense = import('~/objects/suspense').default
 
+/* ENV */
+
+type Env = 'ssr' | 'browser' | 'via'
+
 /* FUNCTIONS */
 
 type BatchFunction<T = unknown> = () => PromiseMaybe<T>
 
-type CallbackFunction = (stack?: Stack) => void
+type CallbackFunction = (options?: { stack?: Stack, env?: Env }) => void
 
-type CleanupFunction = (stack?: Stack) => void
+type CleanupFunction = (options?: { stack?: Stack, env?: Env }) => void
 
-type ContextFunction<T = unknown> = (stack?: Stack) => T
+type ContextFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
-type DisposeFunction = (stack?: Stack) => void
+type DisposeFunction = (options?: { stack?: Stack, env?: Env }) => void
 
-type EffectFunction = (stack?: Stack) => CleanupFunction | void
+type EffectFunction = (options?: { stack?: Stack, env?: Env }) => CleanupFunction | void
 
 type ErrorFunction = (error: Error) => void
 
@@ -47,13 +51,13 @@ type MapFunction<T = unknown, R = unknown> = (value: T, index: FunctionMaybe<num
 
 type MapValueFunction<T = unknown, R = unknown> = (value: Indexed<T>, index: FunctionMaybe<number>) => R
 
-type MemoFunction<T = unknown> = (stack?: Stack) => T
+type MemoFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
-type ObserverFunction<T = unknown> = (stack?: Stack) => T
+type ObserverFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
 type SelectorFunction<T = unknown> = (value: T) => ObservableReadonly<boolean>
 
-type SuspenseFunction<T = unknown> = (stack?: Stack) => T
+type SuspenseFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
 type TryCatchFunction<T = unknown> = ({ error, reset }: { error: Error, reset: DisposeFunction }) => T
 
@@ -63,17 +67,18 @@ type UntrackedFunction<Arguments extends unknown[], T = unknown> = (...args: Arg
 
 type UpdateFunction<T = unknown> = (value: T) => T
 
-type WithFunction<T = unknown> = (stack?: Stack) => T
+type WithFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
-type WrappedFunction<T = unknown> = (stack?: Stack) => T
+type WrappedFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }) => T
 
-type WrappedDisposableFunction<T = unknown> = (stack?: Stack, dispose?: DisposeFunction) => T
+type WrappedDisposableFunction<T = unknown> = (options?: { stack?: Stack, env?: Env }, dispose?: DisposeFunction) => T
 
 /* EFFECT */
 
 type EffectOptions = {
   suspense?: boolean,
   sync?: boolean | 'init'
+  env?: Env,
   stack?: Stack
 }
 
@@ -89,6 +94,7 @@ type ForOptions = {
 type MemoOptions<T = unknown> = {
   equals?: EqualsFunction<T> | false,
   sync?: boolean
+  env?: Env,
   stack?: Stack
 }
 
@@ -190,6 +196,7 @@ type Resolved<T = unknown> = T
 /* EXPORT */
 
 export type { IContext, IEffect, IMemo, IObservable, IObserver, IOwner, IRoot, ISchedulerAsync, ISchedulerSync, ISuperRoot, ISuspense }
+export type { Env }
 export type { BatchFunction, CallbackFunction, CleanupFunction, ContextFunction, DisposeFunction, EffectFunction, ErrorFunction, EqualsFunction, MapFunction, MapValueFunction, MemoFunction, ObserverFunction, SelectorFunction, SuspenseFunction, TryCatchFunction, UntrackFunction, UntrackedFunction, UpdateFunction, WithFunction, WrappedFunction, WrappedDisposableFunction }
 export type { EffectOptions }
 export type { ForOptions }

@@ -13,7 +13,7 @@ const tryCatch = <T, F>(value: T, fn: TryCatchFunction<F>): ObservableReadonly<R
 
   const observable = $<Error>()
 
-  return memo((stack) => {
+  return memo((opts) => {
 
     const error = observable()
 

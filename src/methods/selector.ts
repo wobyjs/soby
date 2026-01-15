@@ -12,14 +12,11 @@ import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { is } from '~/utils'
 
-/* HELPERS */
-const isEqualForSelector = (a: unknown, b: unknown): boolean => {
-  // Treat 0 and -0 as equal for selector purposes
-  if ((a === 0 || is(a, -0)) && (b === 0 || is(b, -0))) return true
-  return is(a, b)
-}
 import type { SelectorFunction, ObservableReadonly } from '~/types'
-import { callStack, Stack } from './debugger'
+import { callStack } from './debugger'
+// Stack type is available for debugging purposes
+
+/* HELPERS */
 
 /* HELPERS */
 
@@ -56,7 +53,7 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     return (value: T): ObservableReadonly<boolean> => {
 
-      return (isEqualForSelector(value, sourceValue)) ? OBSERVABLE_TRUE : OBSERVABLE_FALSE
+      return (value === sourceValue) ? OBSERVABLE_TRUE : OBSERVABLE_FALSE
 
     }
 
@@ -67,20 +64,19 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
   let selecteds = new DisposableMap<unknown, SelectedObservable>()
   let selectedValue: T = untrack(source)
 
-  const stack = callStack()
-  effect((stack?: Stack) => {
+  effect(() => {
 
     const valuePrev = selectedValue
     const valueNext = source()
 
-    if (isEqualForSelector(valuePrev, valueNext)) return
+    if (is(valuePrev, valueNext)) return
 
     selectedValue = valueNext
 
     selecteds.get(valuePrev)?.set(false)
     selecteds.get(valueNext)?.set(true)
 
-  }, { suspense: false, sync: true, stack })
+  }, { suspense: false, sync: true })
 
   /* CLEANUP ALL */
 
@@ -106,8 +102,8 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     } else {
 
-      const isSelected = isEqualForSelector(value, selectedValue)
-      selected = new SelectedObservable(isSelected)
+      console.log('SelectedObservable', value, selectedValue)
+      selected = new SelectedObservable(value === selectedValue)
       selected.selecteds = selecteds
       selected.source = value
 
@@ -121,7 +117,8 @@ const selector = <T>(source: () => T): SelectorFunction<T> => {
 
     /* RETURN */
 
-    return readable(selected)
+    const stack = callStack()
+    return readable(selected, stack)
 
   }
 

@@ -1,7 +1,7 @@
 
 /* MAIN */
 
-import type { DisposeFunction } from "./types"
+import type { DisposeFunction, Env } from "./types"
 import { Stack } from '~/methods/debugger'
 
 const castArray = <T>(value: T[] | T): T[] => {
@@ -59,7 +59,7 @@ const isSymbol = (value: unknown): value is symbol => {
 
 }
 
-const noop = (stack?: Stack, dispose?: DisposeFunction): void => {
+const noop = (options?: { stack?: Stack, env?: Env }, dispose?: DisposeFunction): void => {
 
   return
 

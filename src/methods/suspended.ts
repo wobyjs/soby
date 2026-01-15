@@ -6,12 +6,12 @@ import { OWNER } from '../objects/superroot'
 import { readable } from '~/objects/callable'
 import Observable from '~/objects/observable'
 import { SYMBOL_SUSPENSE } from '~/symbols'
-import type { ISuspense, ObservableReadonly } from '~/types'
+import type { ISuspense, ObservableReadonly, Env } from '~/types'
 import type { Stack } from './debugger'
 
 /* MAIN */
 
-const suspended = (stack?: Stack): ObservableReadonly<boolean> => {
+const suspended = (options?: { stack?: Stack, env?: Env }): ObservableReadonly<boolean> => {
 
   const suspense: ISuspense | undefined = OWNER.get(SYMBOL_SUSPENSE)
 
@@ -19,7 +19,7 @@ const suspended = (stack?: Stack): ObservableReadonly<boolean> => {
 
   const observable = (suspense.observable ||= new Observable(!!suspense.suspended))
 
-  return readable(observable, stack)
+  return readable(observable, options?.stack)
 
 }
 
