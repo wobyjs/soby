@@ -1,29 +1,17 @@
-/*
-*/
+/* IMPORT */
 
+import type { default as IContext } from '~/objects/context'
+import type { default as IEffect } from '~/objects/effect'
+import type { default as IMemo } from '~/objects/memo'
+import type { default as IObservable } from '~/objects/observable'
+import type { default as IObserver } from '~/objects/observer'
+import type { default as IOwner } from '~/objects/owner'
+import type { default as IRoot } from '~/objects/root'
+import type { default as ISchedulerAsync } from '~/objects/scheduler.async'
+import type { default as ISchedulerSync } from '~/objects/scheduler.sync'
+import type { default as ISuperRoot } from '~/objects/superroot'
+import type { default as ISuspense } from '~/objects/suspense'
 import type { Stack } from '~/methods/debugger'
-
-type IContext = import('~/objects/context').default
-
-type IEffect = import('~/objects/effect').default
-
-type IMemo<T = unknown> = import('~/objects/memo').default<T>
-
-type IObservable<T = unknown> = import('~/objects/observable').default<T>
-
-type IObserver = import('~/objects/observer').default
-
-type IOwner = import('~/objects/owner').default
-
-type IRoot = import('~/objects/root').default
-
-type ISchedulerAsync = typeof import('~/objects/scheduler.async').default
-
-type ISchedulerSync = typeof import('~/objects/scheduler.sync').default
-
-type ISuperRoot = import('~/objects/superroot').default
-
-type ISuspense = import('~/objects/suspense').default
 
 /* FUNCTIONS */
 
