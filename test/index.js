@@ -4,11 +4,16 @@
 import { describe } from 'fava';
 import { setTimeout as delay } from 'node:timers/promises';
 import $ from '../dist/index.js';
+import isObservableBoolean from '../dist/methods/is_observable_boolean.js';
 import isObservableFrozen from '../dist/methods/is_observable_frozen.js';
 import isObservableReadable from '../dist/methods/is_observable_readable.js';
 import isObservableWritable from '../dist/methods/is_observable_writable.js';
+import isUntracked from '../dist/methods/is_untracked.js';
+import { deepResolve } from '../dist/methods/deep_resolve.js';
+import warmup from '../dist/methods/warmup.js';
+import target from '../dist/methods/target.js';
 import { SYMBOL_STORE_VALUES, SYMBOL_UNTRACKED } from '../dist/symbols.js';
-import { observable } from '../dist/index.js';
+import { observable, DEBUGGER, Stack, callStack } from '../dist/index.js';
 
 /* HELPERS */
 
@@ -9685,7 +9690,7 @@ describe('oby', () => {
 
       await $.suspense(suspended, () => {
 
-        return $.root(async (stack, dispose) => {
+        return $.root(async dispose => {
 
           $.effect(() => {
 
@@ -11201,6 +11206,630 @@ describe('oby', () => {
       t.is(calls, 3);
       t.is(memo(), 2);
       t.is(calls, 4);
+
+    });
+
+  });
+
+  describe('isObservableBoolean', it => {
+
+    it('returns true for a boolean observable created by $.boolean()', t => {
+
+      const o = $(false);
+      const b = $.boolean(o);
+
+      t.true(isObservableBoolean(b));
+
+    });
+
+    it('returns false for a plain writable observable', t => {
+
+      const o = $(true);
+
+      t.false(isObservableBoolean(o));
+
+    });
+
+    it('returns false for a readonly observable', t => {
+
+      const o = $(true);
+      const r = $.readonly(o);
+
+      t.false(isObservableBoolean(r));
+
+    });
+
+    it('returns false for a memo observable', t => {
+
+      const o = $(1);
+      const m = $.memo(() => o() > 0);
+
+      t.false(isObservableBoolean(m));
+
+    });
+
+    it('returns false for primitives', t => {
+
+      t.false(isObservableBoolean(true));
+      t.false(isObservableBoolean(false));
+      t.false(isObservableBoolean(null));
+      t.false(isObservableBoolean(undefined));
+      t.false(isObservableBoolean(123));
+      t.false(isObservableBoolean('hello'));
+
+    });
+
+    it('returns false for a regular function', t => {
+
+      t.false(isObservableBoolean(() => true));
+
+    });
+
+    it('returns false when $.boolean() receives a non-function (returns primitive)', t => {
+
+      const result = $.boolean(true); // returns !!true = true (primitive)
+
+      t.false(isObservableBoolean(result));
+
+    });
+
+  });
+
+  describe('isObservableFrozen', it => {
+
+    it('returns true for a memo with no reactive dependencies after first call', t => {
+
+      const m = $.memo(() => 42);
+
+      m(); // force evaluation — memo has no deps, disposes itself
+
+      t.true(isObservableFrozen(m));
+
+    });
+
+    it('returns true for a memo created from an untracked function', t => {
+
+      const m = $.memo($.untracked(() => 42));
+
+      t.true(isObservableFrozen(m));
+
+    });
+
+    it('returns false for a memo with reactive dependencies', t => {
+
+      const o = $(1);
+      const m = $.memo(() => o());
+
+      m();
+
+      t.false(isObservableFrozen(m));
+
+    });
+
+    it('returns false for a plain writable observable', t => {
+
+      const o = $(1);
+
+      t.false(isObservableFrozen(o));
+
+    });
+
+    it('returns false for a plain readonly observable', t => {
+
+      const o = $(1);
+      const r = $.readonly(o);
+
+      t.false(isObservableFrozen(r));
+
+    });
+
+    it('returns false for primitives', t => {
+
+      t.false(isObservableFrozen(42));
+      t.false(isObservableFrozen(null));
+      t.false(isObservableFrozen(undefined));
+
+    });
+
+    it('returns false for a plain function', t => {
+
+      t.false(isObservableFrozen(() => 42));
+
+    });
+
+  });
+
+  describe('isObservableReadable', it => {
+
+    it('returns true for a readonly observable', t => {
+
+      const o = $(1);
+      const r = $.readonly(o);
+
+      t.true(isObservableReadable(r));
+
+    });
+
+    it('returns true for a memo observable', t => {
+
+      const o = $(1);
+      const m = $.memo(() => o() * 2);
+
+      t.true(isObservableReadable(m));
+
+    });
+
+    it('returns false for a plain writable observable', t => {
+
+      const o = $(1);
+
+      t.false(isObservableReadable(o));
+
+    });
+
+    it('returns false for primitives', t => {
+
+      t.false(isObservableReadable(42));
+      t.false(isObservableReadable(null));
+      t.false(isObservableReadable(undefined));
+
+    });
+
+    it('returns false for a plain function', t => {
+
+      t.false(isObservableReadable(() => 42));
+
+    });
+
+  });
+
+  describe('isObservableWritable', it => {
+
+    it('returns true for a writable observable created by $()', t => {
+
+      const o = $(1);
+
+      t.true(isObservableWritable(o));
+
+    });
+
+    it('returns true for a writable observable created by $.observable()', t => {
+
+      const o = $.observable(1);
+
+      t.true(isObservableWritable(o));
+
+    });
+
+    it('returns false for a readonly observable', t => {
+
+      const o = $(1);
+      const r = $.readonly(o);
+
+      t.false(isObservableWritable(r));
+
+    });
+
+    it('returns false for a memo observable', t => {
+
+      const o = $(1);
+      const m = $.memo(() => o() * 2);
+
+      t.false(isObservableWritable(m));
+
+    });
+
+    it('returns false for primitives', t => {
+
+      t.false(isObservableWritable(42));
+      t.false(isObservableWritable(null));
+      t.false(isObservableWritable(undefined));
+
+    });
+
+    it('returns false for a plain function', t => {
+
+      t.false(isObservableWritable(() => 42));
+
+    });
+
+  });
+
+  describe('isUntracked', it => {
+
+    it('returns true for a function created by $.untracked(fn)', t => {
+
+      const u = $.untracked(() => 42);
+
+      t.true(isUntracked(u));
+
+    });
+
+    it('returns true for a value wrapped by $.untracked()', t => {
+
+      const u = $.untracked(42);
+
+      t.true(isUntracked(u));
+
+    });
+
+    it('returns false for a plain observable', t => {
+
+      const o = $(1);
+
+      t.false(isUntracked(o));
+
+    });
+
+    it('returns false for a plain function', t => {
+
+      t.false(isUntracked(() => 42));
+
+    });
+
+    it('returns false for primitives', t => {
+
+      t.false(isUntracked(42));
+      t.false(isUntracked(null));
+      t.false(isUntracked(undefined));
+
+    });
+
+    it('does not create a tracking dependency inside a memo', t => {
+
+      const o = $(1);
+      const u = $.untracked(() => o());
+
+      let calls = 0;
+
+      const m = $.memo(() => {
+        calls += 1;
+        return u(); // untracked — no dep on o
+      });
+
+      t.is(calls, 0);
+      t.is(m(), 1);
+      t.is(calls, 1);
+
+      o(2);
+
+      t.is(calls, 1); // not re-run
+      t.is(m(), 1);   // cached
+      t.is(calls, 1);
+
+    });
+
+  });
+
+  describe('deepResolve', it => {
+
+    it('returns primitive values as-is', t => {
+
+      t.is(deepResolve(42), 42);
+      t.is(deepResolve('hello'), 'hello');
+      t.is(deepResolve(true), true);
+      t.is(deepResolve(null), null);
+      t.is(deepResolve(undefined), undefined);
+
+    });
+
+    it('calls a function and returns its result', t => {
+
+      t.is(deepResolve(() => 42), 42);
+      t.is(deepResolve(() => 'hello'), 'hello');
+
+    });
+
+    it('recursively resolves nested functions', t => {
+
+      t.is(deepResolve(() => () => 42), 42);
+      t.is(deepResolve(() => () => () => 'deep'), 'deep');
+
+    });
+
+    it('resolves arrays element by element', t => {
+
+      t.deepEqual(deepResolve([1, 2, 3]), [1, 2, 3]);
+      t.deepEqual(deepResolve([() => 1, () => 2]), [1, 2]);
+      t.deepEqual(deepResolve([1, () => 2, 3]), [1, 2, 3]);
+
+    });
+
+    it('recursively resolves nested arrays', t => {
+
+      t.deepEqual(deepResolve([[() => 1, 2], 3]), [[1, 2], 3]);
+
+    });
+
+    it('resolves observable values by calling them', t => {
+
+      const o = $(42);
+
+      t.is(deepResolve(o), 42);
+
+    });
+
+    it('does not resolve plain objects (returns them as-is)', t => {
+
+      const obj = { a: 1 };
+
+      t.is(deepResolve(obj), obj);
+
+    });
+
+  });
+
+  describe('warmup', it => {
+
+    it('returns the same observable', t => {
+
+      const o = $(1);
+      const r = $.readonly(o);
+
+      t.is(warmup(r), r);
+
+    });
+
+    it('returns the same memo observable', t => {
+
+      const o = $(1);
+      const m = $.memo(() => o());
+
+      t.is(warmup(m), m);
+
+    });
+
+    it('forces computation of a lazy memo', t => {
+
+      let calls = 0;
+      const o = $(1);
+      const m = $.memo(() => {
+        calls += 1;
+        return o() * 2;
+      });
+
+      t.is(calls, 0);
+
+      warmup(m);
+
+      t.is(calls, 1);
+
+    });
+
+    it('pushes a no-dependency memo into frozen state', t => {
+
+      const m = $.memo(() => 42);
+
+      t.false(isObservableFrozen(m));
+
+      warmup(m);
+
+      t.true(isObservableFrozen(m));
+
+    });
+
+    it('does not create a tracking dependency inside a memo', t => {
+
+      const o = $(1);
+
+      let calls = 0;
+
+      const m = $.memo(() => {
+        calls += 1;
+        warmup($.readonly(o)); // read via warmup — untracked
+        return 42;
+      });
+
+      t.is(calls, 0);
+      t.is(m(), 42);
+      t.is(calls, 1);
+
+      o(2);
+
+      t.is(calls, 1); // not re-run
+      t.is(m(), 42);
+      t.is(calls, 1);
+
+    });
+
+  });
+
+  describe('target', it => {
+
+    it('returns the same internal observable from writable and its readonly', t => {
+
+      const o = $(1);
+      const r = $.readonly(o);
+
+      t.is(target(o), target(r));
+
+    });
+
+    it('returns an object with a get() method for a writable observable', t => {
+
+      const o = $(42);
+      const internal = target(o);
+
+      t.is(typeof internal, 'object');
+      t.is(typeof internal.get, 'function');
+      t.is(internal.get(), 42);
+
+    });
+
+    it('returns an object with a get() method for a readable observable', t => {
+
+      const o = $(42);
+      const r = $.readonly(o);
+      const internal = target(r);
+
+      t.is(typeof internal, 'object');
+      t.is(typeof internal.get, 'function');
+      t.is(internal.get(), 42);
+
+    });
+
+    it('reflects value changes through the internal observable', t => {
+
+      const o = $(1);
+      const internal = target(o);
+
+      t.is(internal.get(), 1);
+
+      o(2);
+
+      t.is(internal.get(), 2);
+
+    });
+
+    it('returns the object itself when given a non-function (IObservable)', t => {
+
+      const o = $(1);
+      const internal = target(o);
+
+      t.is(target(internal), internal);
+
+    });
+
+  });
+
+  describe('DEBUGGER', it => {
+
+    it('has debug flag defaulting to false', t => {
+
+      t.is(DEBUGGER.debug, false);
+
+    });
+
+    it('has test flag defaulting to false', t => {
+
+      t.is(DEBUGGER.test, false);
+
+    });
+
+    it('has verboseComment flag defaulting to false', t => {
+
+      t.is(DEBUGGER.verboseComment, false);
+
+    });
+
+    it('has contextComment flag defaulting to false', t => {
+
+      t.is(DEBUGGER.contextComment, false);
+
+    });
+
+    it('flags can be toggled', t => {
+
+      DEBUGGER.debug = true;
+      t.is(DEBUGGER.debug, true);
+      DEBUGGER.debug = false;
+
+      DEBUGGER.test = true;
+      t.is(DEBUGGER.test, true);
+      DEBUGGER.test = false;
+
+    });
+
+  });
+
+  describe('Stack', it => {
+
+    it('is an instance of Error', t => {
+
+      const s = new Stack('test');
+
+      t.true(s instanceof Error);
+
+    });
+
+    it('has name "Stack"', t => {
+
+      const s = new Stack();
+
+      t.is(s.name, 'Stack');
+
+    });
+
+    it('uses provided message', t => {
+
+      const s = new Stack('my message');
+
+      t.is(s.message, 'my message');
+
+    });
+
+    it('defaults to empty message', t => {
+
+      const s = new Stack();
+
+      t.is(s.message, '');
+
+    });
+
+    it('has a stack trace string', t => {
+
+      const s = new Stack('test');
+
+      t.is(typeof s.stack, 'string');
+
+    });
+
+    it('respects startIndex to trim stack frames', t => {
+
+      const s0 = new Stack('test', 0);
+      const s1 = new Stack('test', 1);
+      const lines0 = s0.stack.split('\n').length;
+      const lines1 = s1.stack.split('\n').length;
+
+      t.true(lines1 <= lines0);
+
+    });
+
+  });
+
+  describe('callStack', it => {
+
+    it('returns undefined when DEBUGGER.debug is false', t => {
+
+      DEBUGGER.debug = false;
+
+      t.is(callStack(), undefined);
+
+    });
+
+    it('returns a Stack instance when DEBUGGER.debug is true', t => {
+
+      DEBUGGER.debug = true;
+
+      const stack = callStack();
+
+      t.true(stack instanceof Stack);
+
+      DEBUGGER.debug = false;
+
+    });
+
+    it('uses provided message when DEBUGGER.debug is true', t => {
+
+      DEBUGGER.debug = true;
+
+      const stack = callStack('my message');
+
+      t.is(stack.message, 'my message');
+
+      DEBUGGER.debug = false;
+
+    });
+
+    it('defaults to "Call Stack" message when DEBUGGER.debug is true', t => {
+
+      DEBUGGER.debug = true;
+
+      const stack = callStack();
+
+      t.is(stack.message, 'Call Stack');
+
+      DEBUGGER.debug = false;
 
     });
 

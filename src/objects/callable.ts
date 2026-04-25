@@ -17,8 +17,8 @@ function frozenFunction<T>(this: T): T {
   }
 }
 
-function readableFunction<T>(this: IObservable<T>): T {
-  if (arguments.length) {
+function readableFunction<T>(this: IObservable<T>, stack?: Stack): T {
+  if (arguments.length && !(arguments[0] instanceof Stack)) {
     throw new Error('A readonly Observable can not be updated')
   } else {
     return this.get()

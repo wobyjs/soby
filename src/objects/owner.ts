@@ -92,7 +92,7 @@ class Owner {
 
     try {
 
-      return fn(stack)
+      return stack !== undefined ? fn(stack) : fn()
 
     } catch (error: unknown) {
 
