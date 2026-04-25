@@ -4,7 +4,7 @@
 import { SYMBOL_OBSERVABLE, SYMBOL_OBSERVABLE_FROZEN, SYMBOL_OBSERVABLE_READABLE, SYMBOL_OBSERVABLE_WRITABLE } from '~/symbols'
 import { isFunction } from '~/utils'
 import type { IObservable, UpdateFunction, Observable, ObservableReadonly } from '~/types'
-import type { Stack } from '~/methods/debugger'
+import { Stack } from '~/methods/debugger'
 import { deepResolve } from '~/methods/deep_resolve'
 
 /* MAIN - FUNCTIONS */

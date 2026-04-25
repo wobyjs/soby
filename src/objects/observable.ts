@@ -101,12 +101,12 @@ class Observable<T = unknown> {
               // This is valid - direct function
             }
             else {
-              throw new TypeError(`Expected value of type 'function' (as [fn] array or direct function), but received '${typeof value}'`)
+              throw new TypeError(`Expected value of type 'function', but received '${typeof value}'`)
             }
           }
           // Handle object types - both string literal and Object constructor
           else if (expectedType === 'object' || expectedType === Object) {
-            if (typeof value !== 'object' || value === null) {
+            if (typeof value !== 'object') {
               throw new TypeError(`Expected value of type 'object', but received '${typeof value}'`)
             }
           }

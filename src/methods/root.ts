@@ -9,8 +9,10 @@ import { callStack } from './debugger'
 
 const root = <T>(fn: WrappedDisposableFunction<T>): T => {
   const stack = callStack()
-  return new Root(true).wrap(fn, undefined as any, undefined as any, stack)
-
+  const rootInstance = new Root(true)
+  const dispose = () => rootInstance.dispose(true)
+  const wrapper = () => fn(dispose)
+  return rootInstance.wrap(wrapper, rootInstance, undefined as any, stack)
 }
 
 /* EXPORT */

@@ -55,7 +55,7 @@ type WithFunction<T = unknown> = (stack?: Stack) => T
 
 type WrappedFunction<T = unknown> = (stack?: Stack) => T
 
-type WrappedDisposableFunction<T = unknown> = (stack?: Stack, dispose?: DisposeFunction) => T
+type WrappedDisposableFunction<T = unknown> = (dispose?: DisposeFunction) => T
 
 /* EFFECT */
 
