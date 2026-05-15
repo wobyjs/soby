@@ -1894,28 +1894,20 @@ describe('oby', () => {
     it('returns an observable that tells if the parent got disposed or not', async t => {
 
       const a = $(1);
-      const values = [];
+      const valuesByRun = {};
       let effectRun = 0;
-      const run1Complete = { promise: null, resolve: null };
-      const run2Complete = { promise: null, resolve: null };
-      
-      run1Complete.promise = new Promise(resolve => run1Complete.resolve = resolve);
-      run2Complete.promise = new Promise(resolve => run2Complete.resolve = resolve);
 
       $.effect(() => {
         const runId = ++effectRun;
         const disposed = $.disposed();
 
-        values.push(disposed());
+        valuesByRun[runId] = [disposed()];
 
         a();
 
-        // Use a promise-based approach instead of setTimeout to ensure deterministic timing
         Promise.resolve().then(async () => {
           await delay(20);
-          values.push(disposed());
-          if (runId === 1) run1Complete.resolve();
-          if (runId === 2) run2Complete.resolve();
+          valuesByRun[runId].push(disposed());
         });
 
       });
@@ -1924,22 +1916,18 @@ describe('oby', () => {
 
       a(2);
       await tick();
-      
+
       a(3);
       await tick();
 
-      // Wait for all the async operations to complete
       await delay(100);
 
-      // Verify that disposed observables correctly report disposal status
-      // First two runs should start as false, and their async callbacks should see true after disposal
-      t.is(values[0], false); // First run starts as not disposed
-      t.is(values[1], false); // Second run starts as not disposed  
-      t.is(values[2], false); // Third run starts as not disposed
-      // The async callbacks from runs 1 and 2 should see true (disposed)
-      // The async callback from run 3 should see false (still not disposed)
-      t.true(values.includes(true)); // At least some disposals occurred
-      t.true(values.filter(v => v === false).length >= 3); // At least 3 false values (initial runs)
+      // Each run should have started as not disposed (false), then async callback sees disposed (true)
+      t.is(valuesByRun[1][0], false);
+      t.is(valuesByRun[2][0], false);
+      t.is(valuesByRun[3][0], false);
+      t.true(valuesByRun[1].includes(true), 'Run 1 async callback should see disposed=true');
+      t.true(valuesByRun[2].includes(true), 'Run 2 async callback should see disposed=true');
 
     });
 
