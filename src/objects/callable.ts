@@ -52,7 +52,7 @@ const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T
   value.stack = stack
   const fn = readableFunction.bind(value as any) as ObservableReadonly<T> //TSC
   fn.valueOf = () => deepResolve(fn)
-  fn.toString = () => fn.valueOf().toString()
+  fn.toString = () => deepResolve(fn, false).toString()
   fn[SYMBOL_OBSERVABLE] = true
   fn[SYMBOL_OBSERVABLE_READABLE] = value
   return fn
@@ -61,7 +61,7 @@ const readable = <T>(value: IObservable<T>, stack?: Stack): ObservableReadonly<T
 /**
  * Creates a writable observable function with enhanced type information.
  * The returned function can be used as both a getter and setter for the observable value.
- * 
+ *
  * @param value - The observable instance to wrap
  * @param stack - Optional debugging stack trace
  * @returns A function that acts as both getter and setter with proper type annotations
@@ -70,7 +70,7 @@ const writable = <T>(value: IObservable<T>, stack?: Stack): Observable<T> & { [S
   value.stack = stack
   const fn = writableFunction.bind(value as any) as ObservableReadonly<T> //TSC
   fn.valueOf = () => deepResolve(fn)
-  fn.toString = () => fn.valueOf().toString()
+  fn.toString = () => deepResolve(fn, false).toString()
   fn[SYMBOL_OBSERVABLE] = true
   fn[SYMBOL_OBSERVABLE_WRITABLE] = value
   return fn as any
